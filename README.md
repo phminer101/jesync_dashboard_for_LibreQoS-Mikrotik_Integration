@@ -1,6 +1,10 @@
 # Jesync Dashboard – Full Installation Guide
 
 A web-based GUI to manage Jesync and LibreQoS configuration files
+![image](https://github.com/user-attachments/assets/8e5844bd-b8a4-45c1-8ffd-78a63d65ee51)
+![image](https://github.com/user-attachments/assets/32b62b80-123b-40bc-9d8c-231d2532ef0a)
+![image](https://github.com/user-attachments/assets/5232e647-9a58-4a9a-9503-19768f9205a0)
+
 
 ## 📊 Features
 - ✅ Edit .json, .py, .conf, and view .csv
