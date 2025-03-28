@@ -9,75 +9,96 @@
     </div>
   </div>
 
-
- <!-- Jesync Integration Files -->
-<!-- Jesync Integration Files -->
-<div class="card border-dark shadow-sm mt-3">
-  <div class="card-header bg-dark text-white">
-    <i class="bi bi-tools"></i> Jesync Integration Files
-  </div>
-  <div class="card-body p-0">
-    <table class="table table-hover m-0">
-      <thead class="align-middle text-center">
-        <tr>
-          <th class="w-75">Filename</th>
-          <th class="w-25">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for file in files %}
-          {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py"] %}
-          <tr class="align-middle">
-            <td>{{ file }}</td>
-            <td class="text-center">
-              <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
-            </td>
+  <!-- Jesync Integration Files -->
+  <div class="card border-dark shadow-sm mt-3">
+    <div class="card-header bg-dark text-white">
+      <i class="bi bi-tools"></i> Jesync Integration Files
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover m-0">
+        <thead class="text-center">
+          <tr>
+            <th class="w-75 text-start">Filename</th>
+            <th class="w-25">Actions</th>
           </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for file in files %}
+            {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py"] %}
+            <tr>
+              <td class="text-start">{{ file }}</td>
+              <td class="text-center">
+                <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
+              </td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
-
-
-
 
   <!-- LibreQoS Files -->
-  <div class="row">
-    <div class="col">
-      <div class="card border-primary shadow-sm">
-        <div class="card-header bg-primary text-white">
-          📡 LibreQoS Files
-        </div>
-        <div class="card-body p-0">
-          <table class="table table-hover m-0">
-            <thead class="align-middle text-center">
-        <tr>
-          <th class="w-75">Filename</th>
-          <th class="w-25">Actions</th>
-        </tr>
-      </thead>
-            <tbody>
-  {% for file in files %}
-    {% if file in ["network.json", "ShapedDevices.csv", "lqos.conf"] %}
-    <tr class="align-middle">
-      <td>{{ file }}</td>
-      <td class="text-center">
-        {% if file == "ShapedDevices.csv" %}
-          <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-secondary btn-sm">View</a>
-        {% else %}
-          <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
-        {% endif %}
-      </td>
-    </tr>
-    {% endif %}
-  {% endfor %}
-</tbody>
+  <div class="card border-primary shadow-sm mt-4">
+    <div class="card-header bg-primary text-white">
+      📡 LibreQoS Files
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover m-0">
+        <thead class="text-center">
+          <tr>
+            <th class="w-75 text-start">Filename</th>
+            <th class="w-25">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+            {% if file in ["network.json", "ShapedDevices.csv", "lqos.conf"] %}
+            <tr>
+              <td class="text-start">{{ file }}</td>
+              <td class="text-center">
+                {% if file == "ShapedDevices.csv" %}
+                  <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-secondary btn-sm">View</a>
+                {% else %}
+                  <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-          </table>
-        </div>
-      </div>
+  <!-- LibreQoS Services -->
+  <div class="card border-success shadow-sm mt-4">
+    <div class="card-header bg-success text-white">
+      🔄 LibreQoS Services
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover m-0">
+        <thead class="text-center">
+          <tr>
+            <th class="w-75 text-start">Service</th>
+            <th class="w-25">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler"] %}
+          <tr>
+            <td class="text-start">{{ service }}</td>
+            <td class="text-center">
+              <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                  <i class="bi bi-arrow-repeat"></i> Restart
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
