@@ -68,9 +68,10 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler"]
+    service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
     service_statuses = {s: get_service_status(s) for s in service_list}
     return render_template("dashboard.html", files=FILES.keys(), user=current_user, service_statuses=service_statuses)
+
 
 
 @app.route("/edit/<filename>")
@@ -189,18 +190,19 @@ def delete_user(user_id):
 @login_required
 def restart_specific_service(service):
     import subprocess
-    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler"]
+    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
 
     if service not in allowed:
         flash(f"{service} is not an allowed service.")
         return redirect(url_for("dashboard"))
 
     try:
-        subprocess.run(["/usr/bin/systemctl", "restart", service], check=True)
+        subprocess.run(["/bin/systemctl", "restart", service], check=True)
         flash(f"{service} restarted successfully.")
     except subprocess.CalledProcessError:
         flash(f"Failed to restart {service}.")
     return redirect(url_for("dashboard"))
+
 
 # =======================
 # MAIN ENTRY
