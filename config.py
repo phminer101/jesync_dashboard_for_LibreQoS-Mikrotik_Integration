@@ -5,7 +5,7 @@ FILES = {
     # Jesync Integration
     "jesync_static_device.json": "/opt/libreqos/src/jesync_static_device.json",
     "config.json": "/opt/libreqos/src/config.json",
-    "jesynclqos.py": "/opt/libreqos/src/jesynclqos.py",
+    "jesynclqos.py": "/opt/libreqos/src/updatecsv.py",
 
     # LibreQos
     "network.json": "/opt/libreqos/src/network.json",
