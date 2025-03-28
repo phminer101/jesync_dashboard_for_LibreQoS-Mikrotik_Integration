@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h4 class="mb-3">📝 {{ "Editing" if can_edit else "Viewing" }}: {{ filename }}</h4>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">← Back to Home</a>
+
+  {% if file_type == "csv" %}
+    <div class="table-responsive">
+      <table id="csvTable" class="table table-bordered table-striped table-sm">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- DataTables support -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script>
+      const csvContent = `{{ content | replace('\r\n', '\\n') | safe }}`;
+      const rows = csvContent.trim().split("\n").map(row => row.split(","));
+
+      const table = document.getElementById("csvTable");
+      const thead = table.querySelector("thead");
+      const tbody = table.querySelector("tbody");
+
+      const headerRow = document.createElement("tr");
+      rows[0].forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+
+      rows.slice(1).forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      $(document).ready(function () {
+        $('#csvTable').DataTable();
+      });
+    </script>
+
+  {% elif file_type == "json" %}
+    <div id="editorArea"></div>
+    {% if can_edit %}
+      <button id="saveBtn" class="btn btn-success mt-3">💾 Save</button>
+      <div id="status" class="mt-2 text-info fw-bold"></div>
+    {% else %}
+      <div class="alert alert-warning mt-3">You have view-only access.</div>
+    {% endif %}
+
+    <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.js"></script>
+    <script>
+      const container = document.getElementById("editorArea");
+      const editor = new JSONEditor(container, { mode: 'tree', modes: ['code', 'tree'], mainMenuBar: true });
+      editor.set({{ content|safe }});
+
+      {% if can_edit %}
+      document.getElementById("saveBtn").onclick = () => {
+        fetch("/api/save/{{ filename }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: JSON.stringify(editor.get(), null, 2) })
+        }).then(res => res.json()).then(data => {
+          document.getElementById("status").innerText = data.message || "Saved.";
+        });
+      };
+      {% endif %}
+    </script>
+
+  {% else %}
+    <textarea id="editorArea">{{ content }}</textarea>
+    {% if can_edit %}
+      <button id="saveBtn" class="btn btn-success mt-3">💾 Save</button>
+      <div id="status" class="mt-2 text-info fw-bold"></div>
+    {% endif %}
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <script>
+      const editor = CodeMirror.fromTextArea(document.getElementById("editorArea"), {
+        lineNumbers: true,
+        mode: "python"
+      });
+
+      {% if can_edit %}
+      document.getElementById("saveBtn").onclick = () => {
+        fetch("/api/save/{{ filename }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: editor.getValue() })
+        }).then(res => res.json()).then(data => {
+          document.getElementById("status").innerText = data.message || "Saved.";
+        });
+      };
+      {% endif %}
+    </script>
+  {% endif %}
+</div>
+{% endblock %}

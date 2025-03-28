@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h3>{{ "Add" if mode == "add" else "Edit" }} User</h3>
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      {% if mode == "edit" %}
+        <input class="form-control" name="username" value="{{ user.username }}" readonly>
+      {% else %}
+        <input class="form-control" name="username" required>
+      {% endif %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Password</label>
+      <input class="form-control" name="password" type="text" required value="{{ user.password if mode == 'edit' else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Role</label>
+      <select class="form-select" name="role">
+        <option value="admin" {% if mode == 'edit' and user.role == 'admin' %}selected{% endif %}>Admin</option>
+        <option value="viewer" {% if mode == 'edit' and user.role == 'viewer' %}selected{% endif %}>Viewer</option>
+      </select>
+    </div>
+    <button class="btn btn-success" type="submit">Save</button>
+    <a href="{{ url_for('users') }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
