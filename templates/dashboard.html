@@ -10,38 +10,30 @@
   </div>
 
   <!-- Jesync Integration Files -->
-  <div class="row mb-5">
-    <div class="col">
-      <div class="card border-dark shadow-sm">
-        <div class="card-header bg-dark text-white">
-          🔧 Jesync Integration Files
-        </div>
-        <div class="card-body p-0">
-          <table class="table table-hover m-0">
-            <thead class="table-light">
-              <tr><th>Filename</th><th style="width: 200px;">Actions</th></tr>
-            </thead>
-            <tbody>
-              {% for file in files %}
-                {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py"] %}
-                <tr>
-                  <td class="align-middle">{{ file }}</td>
-                  <td>
-                    {% if file.endswith(".py") %}
-                      <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-secondary btn-sm">View</a>
-                    {% else %}
-                      <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+ <!-- Jesync Integration Files -->
+<div class="card mt-3">
+  <div class="card-header bg-dark text-white">
+    <i class="bi bi-tools"></i> Jesync Integration Files
   </div>
+  <table class="table table-striped mb-0">
+    <thead>
+      <tr><th>Filename</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for file in files %}
+      {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py"] %}
+      <tr>
+        <td>{{ file }}</td>
+        <td>
+          <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
+        </td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
   <!-- LibreQoS Files -->
   <div class="row">
