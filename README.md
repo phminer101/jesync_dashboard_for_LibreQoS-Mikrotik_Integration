@@ -177,7 +177,7 @@ sudo rm -rf /opt/libreqos/src/jesync_dashboard
 - ✅ Auto-run on boot via systemd
 - ✅ Root or group-based system file editing
 
-- ## 💖 Support & Donations
+### 💖 Support & Donations
 
 If you find this project helpful, consider supporting its development. Your donations are greatly appreciated and help to keep the project alive and growing.
 
