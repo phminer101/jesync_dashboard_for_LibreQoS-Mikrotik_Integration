@@ -1,4 +1,4 @@
-# Jesync Dashboard – Full Installation Guide (Ubuntu 24.04)
+# Jesync Dashboard – Full Installation Guide
 
 A web-based GUI to manage Jesync and LibreQoS configuration files
 
