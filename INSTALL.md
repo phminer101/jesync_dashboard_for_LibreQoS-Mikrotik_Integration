@@ -36,7 +36,7 @@ sudo apt install python3 python3-venv python3-pip git nginx curl -y
 ```bash
 sudo mkdir -p /opt/libreqos/src
 cd /opt/libreqos/src
-sudo git clone https://your-repo-url/jesync_dashboard.git
+sudo git clone https://github.com/jesienazareth/jesync_dashboard.git
 cd jesync_dashboard
 sudo chown -R $USER:$USER .
 ```
