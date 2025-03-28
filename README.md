@@ -176,3 +176,11 @@ sudo rm -rf /opt/libreqos/src/jesync_dashboard
 - ✅ Web login system
 - ✅ Auto-run on boot via systemd
 - ✅ Root or group-based system file editing
+
+- ## 💖 Support & Donations
+
+If you find this project helpful, consider supporting its development. Your donations are greatly appreciated and help to keep the project alive and growing.
+
+**Buy me a Coffee:** [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-blue?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/jnhl)
+
+Thank you for your support!
