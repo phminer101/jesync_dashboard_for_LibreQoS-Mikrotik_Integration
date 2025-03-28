@@ -133,13 +133,3 @@ sudo systemctl stop jesync_dashboard
 sudo rm /etc/systemd/system/jesync_dashboard.service
 sudo rm -rf /opt/libreqos/src/jesync_dashboard
 ```
-
-## ✅ Done!
-You now have a production-ready Jesync Dashboard that survives reboots, has permission to edit system files, and looks beautiful too 😎
-
-Would you like me to:
-- Turn this into a downloadable INSTALL.md or .pdf?
-- Wrap it into a bash installer script?
-- Make it deployable with Docker?
-
-Just say the word!
