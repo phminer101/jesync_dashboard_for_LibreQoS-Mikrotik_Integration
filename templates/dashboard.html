@@ -71,44 +71,42 @@
     </div>
   </div>
 
-  <!-- LibreQoS Services -->
-  <div class="card border-success shadow-sm mt-4">
-    <div class="card-header bg-success text-white">
-      🔄 LibreQoS Services
-    </div>
-    <div class="card-body p-0">
-      <table class="table table-hover m-0">
-        <thead class="text-center">
-          <tr>
-            <th class="w-75 text-start">Service</th>
-            <th class="w-25">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler"] %}
-          <tr>
-            <td class="text-start">
-              {{ service }}
-              {% if service_statuses[service] == "active" %}
-                <span class="badge bg-success ms-2">Active</span>
-              {% elif service_statuses[service] == "inactive" %}
-                <span class="badge bg-danger ms-2">Inactive</span>
-              {% else %}
-                <span class="badge bg-secondary ms-2">Unknown</span>
-              {% endif %}
-            </td>
-            <td class="text-center">
-              <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
-                <button type="submit" class="btn btn-outline-success btn-sm">
-                  <i class="bi bi-arrow-repeat"></i> Restart
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<!-- LibreQoS Services -->
+<div class="card border-success shadow-sm mt-4">
+  <div class="card-header bg-success text-white">
+    🔄 LibreQoS Services
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover m-0">
+      <thead class="text-center">
+        <tr>
+          <th class="w-50 text-start">Service</th>
+          <th class="w-25 text-center">Status</th>
+          <th class="w-25 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"] %}
+        <tr>
+          <td class="text-start">{{ service }}</td>
+          <td class="text-center">
+            {% if service_statuses[service] == 'active' %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
+              <button type="submit" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-arrow-repeat"></i> Restart
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 {% endblock %}
