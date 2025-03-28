@@ -34,7 +34,6 @@ sudo apt install python3 python3-venv python3-pip git nginx curl -y
 ### 2. Clone the Dashboard
 
 ```bash
-sudo mkdir -p /opt/libreqos/src
 cd /opt/libreqos/src
 sudo git clone https://github.com/jesienazareth/jesync_dashboard.git
 cd jesync_dashboard
