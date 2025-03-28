@@ -1,4 +1,4 @@
-# ✅ Jesync Dashboard Installation Guide (Ubuntu 24.04)
+# ✅ Jesync Dashboard Installation Guide
 
 This guide will walk you through installing the Jesync Dashboard — a Flask-based web GUI to view and edit Jesync & LibreQoS config files, with user login, role-based access, and dark mode support.
 
