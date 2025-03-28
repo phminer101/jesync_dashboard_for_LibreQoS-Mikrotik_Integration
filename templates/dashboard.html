@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">📊 Jesync Dashboard</h2>
+    <h2 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h2>
     <div>
       <a href="{{ url_for('users') }}" class="btn btn-outline-secondary me-2">Manage Users</a>
       <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
@@ -87,7 +87,16 @@
         <tbody>
           {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler"] %}
           <tr>
-            <td class="text-start">{{ service }}</td>
+            <td class="text-start">
+              {{ service }}
+              {% if service_statuses[service] == "active" %}
+                <span class="badge bg-success ms-2">Active</span>
+              {% elif service_statuses[service] == "inactive" %}
+                <span class="badge bg-danger ms-2">Inactive</span>
+              {% else %}
+                <span class="badge bg-secondary ms-2">Unknown</span>
+              {% endif %}
+            </td>
             <td class="text-center">
               <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
                 <button type="submit" class="btn btn-outline-success btn-sm">
