@@ -23,6 +23,27 @@ Automatically installs everything via script
 ```bash
 bash <(curl -sSL https://github.com/jesienazareth/jesync_dashboard/raw/main/install_jesync_dashboard.sh)
 ```
+### Or
+## To Use:
+
+### Locate the file:
+
+```bash
+install_jesync_dashboard.sh
+```
+
+### Then run:
+
+```bash
+chmod +x install_jesync_dashboard.sh
+./install_jesync_dashboard.sh
+```
+
+### Or remotely (if hosted online):
+
+```bash
+bash <(curl -sSL https://yourhost.com/install_jesync_dashboard.sh)
+```
 
 ### What it does:
 - Installs system dependencies
