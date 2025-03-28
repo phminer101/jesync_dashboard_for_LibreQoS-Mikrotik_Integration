@@ -9,16 +9,19 @@
     </div>
   </div>
 
-  <!-- Jesync Integration Files -->
+
  <!-- Jesync Integration Files -->
 <div class="card mt-3">
   <div class="card-header bg-dark text-white">
     <i class="bi bi-tools"></i> Jesync Integration Files
   </div>
   <table class="table table-striped mb-0">
-    <thead>
-      <tr><th>Filename</th><th>Actions</th></tr>
-    </thead>
+    <thead class="align-middle text-center">
+        <tr>
+          <th class="w-75">Filename</th>
+          <th class="w-25">Actions</th>
+        </tr>
+      </thead>
     <tbody>
     {% for file in files %}
       {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py"] %}
@@ -44,9 +47,12 @@
         </div>
         <div class="card-body p-0">
           <table class="table table-hover m-0">
-            <thead class="table-light">
-              <tr><th>Filename</th><th style="width: 200px;">Actions</th></tr>
-            </thead>
+            <thead class="align-middle text-center">
+        <tr>
+          <th class="w-75">Filename</th>
+          <th class="w-25">Actions</th>
+        </tr>
+      </thead>
             <tbody>
               {% for file in files %}
                 {% if file in ["network.json", "ShapedDevices.csv", "lqos.conf"] %}
