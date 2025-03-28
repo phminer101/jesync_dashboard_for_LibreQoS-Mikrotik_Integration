@@ -165,6 +165,24 @@ def delete_user(user_id):
     db.session.commit()
     flash("User deleted.")
     return redirect(url_for("users"))
+    
+@app.route("/restart/<service>", methods=["POST"])
+@login_required
+def restart_specific_service(service):
+    import subprocess
+    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler"]
+
+    if service not in allowed:
+        flash(f"{service} is not an allowed service.")
+        return redirect(url_for("dashboard"))
+
+    try:
+        subprocess.run(["sudo", "systemctl", "restart", service], check=True)
+        flash(f"{service} restarted successfully.")
+    except subprocess.CalledProcessError:
+        flash(f"Failed to restart {service}.")
+    return redirect(url_for("dashboard"))
+   
 
 # =======================
 # MAIN ENTRY
