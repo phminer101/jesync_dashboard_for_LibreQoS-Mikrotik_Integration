@@ -6,6 +6,22 @@ from sqlalchemy.exc import IntegrityError
 from db import db, UserModel
 from auth import User, get_user_by_username, check_password, has_edit_access
 from config import FILES, validate_and_save
+from config import FILES, validate_and_save
+import subprocess  # <-- you can add this here if not already
+
+# ✅ Add this right below your imports
+def get_service_status(service):
+    try:
+        result = subprocess.run(
+            ["/bin/systemctl", "is-active", service],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return "inactive"  # Not running or failed
+
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
@@ -52,7 +68,10 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", files=FILES.keys(), user=current_user)
+    service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler"]
+    service_statuses = {s: get_service_status(s) for s in service_list}
+    return render_template("dashboard.html", files=FILES.keys(), user=current_user, service_statuses=service_statuses)
+
 
 @app.route("/edit/<filename>")
 @login_required
@@ -177,12 +196,11 @@ def restart_specific_service(service):
         return redirect(url_for("dashboard"))
 
     try:
-        subprocess.run(["sudo", "systemctl", "restart", service], check=True)
+        subprocess.run(["/usr/bin/systemctl", "restart", service], check=True)
         flash(f"{service} restarted successfully.")
     except subprocess.CalledProcessError:
         flash(f"Failed to restart {service}.")
     return redirect(url_for("dashboard"))
-   
 
 # =======================
 # MAIN ENTRY
