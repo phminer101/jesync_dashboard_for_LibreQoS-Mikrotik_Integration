@@ -2,18 +2,40 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-from dotenv import load_dotenv
-import os
-import subprocess
-
 from db import db, UserModel
 from auth import User, get_user_by_username, check_password, has_edit_access
 from config import FILES, validate_and_save
+import subprocess
+import os
+import shutil
 
-# ✅ Load environment variables
+# 🔐 Optional: Generate secret key dynamically
+import secrets
+from dotenv import load_dotenv
+
 load_dotenv()
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# ✅ Service Status Check
+# Initialize DB and LoginManager
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+BACKUP_DIR = "/opt/jesyncbak"
+os.makedirs(BACKUP_DIR, exist_ok=True)
+
+@login_manager.user_loader
+def load_user(user_id):
+    user_model = UserModel.query.get(int(user_id))
+    return User(user_model) if user_model else None
+
+# ======================
+# Systemd Service Status
+# ======================
 def get_service_status(service):
     try:
         result = subprocess.run(
@@ -26,27 +48,10 @@ def get_service_status(service):
     except subprocess.CalledProcessError:
         return "inactive"
 
-# ✅ Flask App Configuration
-app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "default-insecure-key")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# ======================
+# Routes
+# ======================
 
-db.init_app(app)
-
-# ✅ Flask-Login Setup
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "login"
-
-@login_manager.user_loader
-def load_user(user_id):
-    user_model = UserModel.query.get(int(user_id))
-    return User(user_model) if user_model else None
-
-# ===================
-# ROUTES
-# ===================
 @app.route("/")
 def index():
     return redirect(url_for("login"))
@@ -79,8 +84,10 @@ def dashboard():
 def edit_file(filename):
     if filename not in FILES:
         return "Invalid file", 404
+
     with open(FILES[filename], "r") as f:
         content = f.read()
+
     if filename.endswith(".json"):
         file_type = "json"
     elif filename.endswith(".py") or filename.endswith(".conf"):
@@ -89,7 +96,9 @@ def edit_file(filename):
         file_type = "csv"
     else:
         file_type = "text"
+
     view_only = filename.endswith(".csv") or not has_edit_access(current_user)
+
     return render_template("editor.html", filename=filename, content=content, file_type=file_type, can_edit=not view_only)
 
 @app.route("/api/save/<filename>", methods=["POST"])
@@ -99,33 +108,62 @@ def save_file(filename):
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     if filename not in FILES or filename.endswith(".csv"):
         return jsonify({"status": "error", "message": "Read-only file or invalid file"}), 400
+
     content = request.json.get("content", "")
     success, message = validate_and_save(filename, content)
-    return jsonify({"status": "ok"} if success else {"status": "error", "message": message}), 200 if success else 400
+    if success:
+        return jsonify({"status": "ok"})
+    return jsonify({"status": "error", "message": message}), 400
 
-@app.route("/restart/<service>", methods=["POST"])
+# ======================
+# Backup & Restore
+# ======================
+
+@app.route("/backup/<filename>", methods=["POST"])
 @login_required
-def restart_specific_service(service):
-    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
-    if service not in allowed:
-        flash(f"{service} is not an allowed service.")
+def backup_file(filename):
+    if filename not in FILES:
+        flash("Invalid file.")
         return redirect(url_for("dashboard"))
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    src = FILES[filename]
+    dst = os.path.join(BACKUP_DIR, filename + ".bak")
     try:
-        subprocess.run(["/bin/systemctl", "restart", service], check=True)
-        flash(f"{service} restarted successfully.")
-    except subprocess.CalledProcessError:
-        flash(f"Failed to restart {service}.")
+        shutil.copy(src, dst)
+        flash(f"{filename} backed up.")
+    except Exception as e:
+        flash(f"Backup failed: {str(e)}")
     return redirect(url_for("dashboard"))
 
-# ===================
-# USER MANAGEMENT
-# ===================
+@app.route("/restore/<filename>", methods=["POST"])
+@login_required
+def restore_file(filename):
+    if filename not in FILES:
+        flash("Invalid file.")
+        return redirect(url_for("dashboard"))
+    src = os.path.join(BACKUP_DIR, filename + ".bak")
+    dst = FILES[filename]
+    try:
+        if not os.path.exists(src):
+            flash(f"No backup found for {filename}")
+            return redirect(url_for("dashboard"))
+        shutil.copy(src, dst)
+        flash(f"{filename} restored from backup.")
+    except Exception as e:
+        flash(f"Restore failed: {str(e)}")
+    return redirect(url_for("dashboard"))
+
+# ======================
+# User Management
+# ======================
+
 @app.route("/users")
 @login_required
 def users():
     if current_user.role != "admin":
         return "Access denied", 403
-    return render_template("users.html", users=UserModel.query.all())
+    user_list = UserModel.query.all()
+    return render_template("users.html", users=user_list)
 
 @app.route("/users/add", methods=["GET", "POST"])
 @login_required
@@ -183,9 +221,28 @@ def delete_user(user_id):
     flash("User deleted.")
     return redirect(url_for("users"))
 
-# ===================
-# MAIN ENTRY
-# ===================
+# ======================
+# Restart Services
+# ======================
+
+@app.route("/restart/<service>", methods=["POST"])
+@login_required
+def restart_specific_service(service):
+    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
+    if service not in allowed:
+        flash(f"{service} is not an allowed service.")
+        return redirect(url_for("dashboard"))
+    try:
+        subprocess.run(["/bin/systemctl", "restart", service], check=True)
+        flash(f"{service} restarted successfully.")
+    except subprocess.CalledProcessError:
+        flash(f"Failed to restart {service}.")
+    return redirect(url_for("dashboard"))
+
+# ======================
+# Run App
+# ======================
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
