@@ -2,25 +2,13 @@
 {% block content %}
 <div class="container mt-5">
 
- 
-
-  <!-- 🔥 Overall Active Totals -->
-  <div class="alert alert-info text-center fw-bold mb-4">
-    🔥 Total Active Hotspot: {{ total_hotspot }} &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: {{ total_pppoe }}
-  </div>
-
-  <!-- 📡 Per MikroTik Router Summary -->
-  {% for router in mikrotik_data %}
-  <div class="card border-secondary mb-3">
-    <div class="card-header bg-secondary text-white fw-bold">
-      📡 MikroTik: {{ router.name }} ({{ router.address }})
+  <!-- 🔥 Real-time MikroTik Active Users Summary -->
+  <div id="mikrotik-summary">
+    <div class="alert alert-info text-center fw-bold mb-4" id="totals">
+      🔥 Total Active Hotspot: ... &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ...
     </div>
-    <div class="card-body d-flex justify-content-between">
-      <span>Hotspot Users: <strong>{{ router.hotspot }}</strong></span>
-      <span>PPPoE Users: <strong>{{ router.pppoe }}</strong></span>
-    </div>
+    <div id="router-cards"></div>
   </div>
-  {% endfor %}
 
   <!-- 🔧 Jesync Integration Files -->
   <div class="card border-dark shadow-sm mt-4">
@@ -141,4 +129,43 @@
     </div>
   </div>
 </div>
+
+<!-- 🔄 Real-time Polling Script -->
+<script>
+  async function fetchActiveSessions() {
+    try {
+      const res = await fetch("/api/active_sessions");
+      const data = await res.json();
+
+      // Update totals
+      document.getElementById("totals").innerHTML =
+        `🔥 Total Active Hotspot: ${data.total_hotspot} &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ${data.total_pppoe}`;
+
+      // Build router cards
+      const container = document.getElementById("router-cards");
+      container.innerHTML = ""; // clear
+
+      data.mikrotik_data.forEach(router => {
+        const card = document.createElement("div");
+        card.className = "card border-secondary mb-3";
+        card.innerHTML = `
+          <div class="card-header bg-secondary text-white fw-bold">
+            📡 MikroTik: ${router.name} (${router.address})
+          </div>
+          <div class="card-body d-flex justify-content-between">
+            <span>Hotspot Users: <strong>${router.hotspot}</strong></span>
+            <span>PPPoE Users: <strong>${router.pppoe}</strong></span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Failed to fetch active sessions:", err);
+    }
+  }
+
+  // Initial fetch and poll every 10 seconds
+  fetchActiveSessions();
+  setInterval(fetchActiveSessions, 10000);
+</script>
 {% endblock %}
