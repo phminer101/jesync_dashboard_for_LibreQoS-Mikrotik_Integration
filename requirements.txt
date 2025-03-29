@@ -2,4 +2,4 @@ flask
 flask-login
 flask-sqlalchemy
 python-dotenv
-pip install routeros-api
+routeros-api
