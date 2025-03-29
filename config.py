@@ -2,13 +2,16 @@ import json
 import ast
 
 FILES = {
-    "jesync_static_device.json": "/opt/libreqos/src/jesync_static_device.json",
-    "config.json": "/opt/libreqos/src/config.json",
-    "updatecsv.py": "/opt/libreqos/src/updatecsv.py",  # ✅ Add this line
-    "network.json": "/opt/libreqos/src/network.json",
-    "ShapedDevices.csv": "/opt/libreqos/src/ShapedDevices.csv",
-    "lqos.conf": "/etc/lqos.conf"
+    "jesync_static_device.json": "/opt/libreqos/src/jesync_dashboard/jesync_static_device.json",
+    "config.json": "/opt/libreqos/src/jesync_dashboard/config.json",
+    "updatecsv.py": "/opt/libreqos/src/updatecsv.py",
+    "jesyncmt.json": "/opt/libreqos/src/jesync_dashboard/jesyncmt.json",  # ✅ Add this line
+    "network.json": "/etc/libreqos/network.json",
+    "ShapedDevices.csv": "/etc/libreqos/ShapedDevices.csv",
+    "lqos.conf": "/etc/libreqos/lqos.conf"
 }
+
+
 
 
 VIEW_ONLY = ["ShapedDevices.csv"]  # mark which files are read-only
