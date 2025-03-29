@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-5">
+  <!-- Header with Toggle Theme, Manage Users, Logout -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h2>
-    <div>
-      <a href="{{ url_for('users') }}" class="btn btn-outline-secondary me-2">Manage Users</a>
-      <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+    <div class="d-flex align-items-center gap-2">
+      <button onclick="toggleTheme()" class="btn btn-outline-secondary btn-sm">🌗 Toggle Theme</button>
+      <a href="{{ url_for('users') }}" class="btn btn-outline-secondary btn-sm">Manage Users</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Logout</a>
     </div>
   </div>
 
