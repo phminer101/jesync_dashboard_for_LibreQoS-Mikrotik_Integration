@@ -242,6 +242,19 @@ def restart_specific_service(service):
 # ======================
 # Run App
 # ======================
+@app.route("/update_jesync", methods=["POST"])
+@login_required
+def update_jesync():
+    try:
+        script_path = "/opt/libreqos/src/jesync_dashboard/updatejesync.sh"
+        if not os.path.exists(script_path):
+            flash("Update script not found.", "danger")
+        else:
+            subprocess.run(["bash", script_path], check=True)
+            flash("Jesync Dashboard has been updated successfully!", "success")
+    except subprocess.CalledProcessError:
+        flash("Failed to update Jesync Dashboard.", "danger")
+    return redirect(url_for("dashboard"))
 
 if __name__ == "__main__":
     with app.app_context():
