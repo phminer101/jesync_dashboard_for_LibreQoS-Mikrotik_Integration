@@ -2,29 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
+import secrets
+import subprocess  # for systemctl commands
 
 from db import db, UserModel
 from auth import User, get_user_by_username, check_password, has_edit_access
 from config import FILES, validate_and_save
-from config import FILES, validate_and_save
-import subprocess  # <-- you can add this here if not already
 
-# ✅ Add this right below your imports
-def get_service_status(service):
-    try:
-        result = subprocess.run(
-            ["/bin/systemctl", "is-active", service],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return "inactive"  # Not running or failed
-
-
+# ✅ Securely generate random secret key on each run
 app = Flask(__name__)
-app.secret_key = "your-secret-key"
+app.secret_key = secrets.token_hex(32)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -42,9 +30,23 @@ def load_user(user_id):
     return User(user_model) if user_model else None
 
 # =======================
+# Service Status Checker
+# =======================
+def get_service_status(service):
+    try:
+        result = subprocess.run(
+            ["/bin/systemctl", "is-active", service],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return "inactive"
+
+# =======================
 # ROUTES
 # =======================
-
 @app.route("/")
 def index():
     return redirect(url_for("login"))
@@ -71,8 +73,6 @@ def dashboard():
     service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
     service_statuses = {s: get_service_status(s) for s in service_list}
     return render_template("dashboard.html", files=FILES.keys(), user=current_user, service_statuses=service_statuses)
-
-
 
 @app.route("/edit/<filename>")
 @login_required
@@ -121,7 +121,6 @@ def save_file(filename):
 # =======================
 # USER MANAGEMENT (ADMIN)
 # =======================
-
 @app.route("/users")
 @login_required
 def users():
@@ -185,11 +184,13 @@ def delete_user(user_id):
     db.session.commit()
     flash("User deleted.")
     return redirect(url_for("users"))
-    
+
+# =======================
+# SERVICE RESTART BUTTON
+# =======================
 @app.route("/restart/<service>", methods=["POST"])
 @login_required
 def restart_specific_service(service):
-    import subprocess
     allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
 
     if service not in allowed:
@@ -203,11 +204,9 @@ def restart_specific_service(service):
         flash(f"Failed to restart {service}.")
     return redirect(url_for("dashboard"))
 
-
 # =======================
 # MAIN ENTRY
 # =======================
-
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
