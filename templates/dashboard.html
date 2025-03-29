@@ -4,19 +4,18 @@
   <!-- Header with Toggle Theme, Manage Users, Logout -->
  <div class="d-flex justify-content-between align-items-center mb-4">
   <h2 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h2>
-  <div>
-    <a href="{{ url_for('users') }}" class="btn btn-outline-secondary me-2">Manage Users</a>
-    <form action="{{ url_for('update_jesync') }}" method="POST" class="d-inline me-2">
-      <button type="submit" class="btn btn-outline-primary">
-        <i class="bi bi-arrow-up-square"></i> Update Jesync
-      </button>
-    </form>
-    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-  </div>
+  <div class="d-flex gap-2">
+  <button class="btn btn-light" onclick="toggleTheme()">🌓 Toggle Theme</button>
+  <a href="{{ url_for('users') }}" class="btn btn-outline-secondary">Manage Users</a>
+  <form method="POST" action="{{ url_for('update_jesync') }}">
+    <button class="btn btn-outline-primary">🔄 Update Jesync</button>
+  </form>
+  <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
 </div>
 
+</div>
 
-  <!-- Jesync Integration Files -->
+ <!-- Jesync Integration Files -->
   <div class="card border-dark shadow-sm mt-3">
     <div class="card-header bg-dark text-white">
       <i class="bi bi-tools"></i> 🔧 Jesync Integration Files
