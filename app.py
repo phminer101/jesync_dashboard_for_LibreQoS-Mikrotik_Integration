@@ -2,36 +2,18 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-import secrets
-import subprocess  # for systemctl commands
+from dotenv import load_dotenv
+import os
+import subprocess
 
 from db import db, UserModel
 from auth import User, get_user_by_username, check_password, has_edit_access
 from config import FILES, validate_and_save
 
-# ✅ Securely generate random secret key on each run
-app = Flask(__name__)
-app.secret_key = secrets.token_hex(32)
+# ✅ Load environment variables
+load_dotenv()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize database
-db.init_app(app)
-
-# Setup Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "login"
-
-@login_manager.user_loader
-def load_user(user_id):
-    user_model = UserModel.query.get(int(user_id))
-    return User(user_model) if user_model else None
-
-# =======================
-# Service Status Checker
-# =======================
+# ✅ Service Status Check
 def get_service_status(service):
     try:
         result = subprocess.run(
@@ -44,9 +26,27 @@ def get_service_status(service):
     except subprocess.CalledProcessError:
         return "inactive"
 
-# =======================
+# ✅ Flask App Configuration
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "default-insecure-key")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+# ✅ Flask-Login Setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    user_model = UserModel.query.get(int(user_id))
+    return User(user_model) if user_model else None
+
+# ===================
 # ROUTES
-# =======================
+# ===================
 @app.route("/")
 def index():
     return redirect(url_for("login"))
@@ -79,11 +79,8 @@ def dashboard():
 def edit_file(filename):
     if filename not in FILES:
         return "Invalid file", 404
-
     with open(FILES[filename], "r") as f:
         content = f.read()
-
-    # File type detection
     if filename.endswith(".json"):
         file_type = "json"
     elif filename.endswith(".py") or filename.endswith(".conf"):
@@ -92,17 +89,8 @@ def edit_file(filename):
         file_type = "csv"
     else:
         file_type = "text"
-
-    # View-only logic
     view_only = filename.endswith(".csv") or not has_edit_access(current_user)
-
-    return render_template(
-        "editor.html",
-        filename=filename,
-        content=content,
-        file_type=file_type,
-        can_edit=not view_only
-    )
+    return render_template("editor.html", filename=filename, content=content, file_type=file_type, can_edit=not view_only)
 
 @app.route("/api/save/<filename>", methods=["POST"])
 @login_required
@@ -111,23 +99,33 @@ def save_file(filename):
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     if filename not in FILES or filename.endswith(".csv"):
         return jsonify({"status": "error", "message": "Read-only file or invalid file"}), 400
-
     content = request.json.get("content", "")
     success, message = validate_and_save(filename, content)
-    if success:
-        return jsonify({"status": "ok"})
-    return jsonify({"status": "error", "message": message}), 400
+    return jsonify({"status": "ok"} if success else {"status": "error", "message": message}), 200 if success else 400
 
-# =======================
-# USER MANAGEMENT (ADMIN)
-# =======================
+@app.route("/restart/<service>", methods=["POST"])
+@login_required
+def restart_specific_service(service):
+    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
+    if service not in allowed:
+        flash(f"{service} is not an allowed service.")
+        return redirect(url_for("dashboard"))
+    try:
+        subprocess.run(["/bin/systemctl", "restart", service], check=True)
+        flash(f"{service} restarted successfully.")
+    except subprocess.CalledProcessError:
+        flash(f"Failed to restart {service}.")
+    return redirect(url_for("dashboard"))
+
+# ===================
+# USER MANAGEMENT
+# ===================
 @app.route("/users")
 @login_required
 def users():
     if current_user.role != "admin":
         return "Access denied", 403
-    user_list = UserModel.query.all()
-    return render_template("users.html", users=user_list)
+    return render_template("users.html", users=UserModel.query.all())
 
 @app.route("/users/add", methods=["GET", "POST"])
 @login_required
@@ -185,28 +183,9 @@ def delete_user(user_id):
     flash("User deleted.")
     return redirect(url_for("users"))
 
-# =======================
-# SERVICE RESTART BUTTON
-# =======================
-@app.route("/restart/<service>", methods=["POST"])
-@login_required
-def restart_specific_service(service):
-    allowed = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
-
-    if service not in allowed:
-        flash(f"{service} is not an allowed service.")
-        return redirect(url_for("dashboard"))
-
-    try:
-        subprocess.run(["/bin/systemctl", "restart", service], check=True)
-        flash(f"{service} restarted successfully.")
-    except subprocess.CalledProcessError:
-        flash(f"Failed to restart {service}.")
-    return redirect(url_for("dashboard"))
-
-# =======================
+# ===================
 # MAIN ENTRY
-# =======================
+# ===================
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
@@ -215,5 +194,4 @@ if __name__ == "__main__":
         if not UserModel.query.filter_by(username="viewer").first():
             db.session.add(UserModel(username="viewer", password="viewerpass", role="viewer"))
         db.session.commit()
-
     app.run(host="0.0.0.0", port=5000, debug=True)
