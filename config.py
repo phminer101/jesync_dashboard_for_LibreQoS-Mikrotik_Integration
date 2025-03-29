@@ -6,7 +6,7 @@ FILES = {
     "config.json": "/opt/libreqos/src/config.json",
     "updatecsv.py": "/opt/libreqos/src/updatecsv.py",
     "jesyncmt.json": "/opt/libreqos/src/jesync_dashboard/jesyncmt.json",  # ✅ Add this line
-    "network.json": "/etc/libreqos/network.json",
+    "network.json": "/etc/libreqos/src/network.json",
     "ShapedDevices.csv": "/etc/libreqos/ShapedDevices.csv",
     "lqos.conf": "/etc/libreqos/lqos.conf"
 }
