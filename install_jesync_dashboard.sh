@@ -2,39 +2,38 @@
 
 set -e
 
-echo "📦 Installing Jesync Dashboard..."
+echo "🔧 Installing Jesync Dashboard..."
 
-# 1. Update and install dependencies
-sudo apt update
-sudo apt install -y python3 python3-venv python3-pip git curl
+# 1. System Requirements
+echo "📦 Installing system dependencies..."
+sudo apt update && sudo apt install -y python3 python3-venv python3-pip git curl nginx
 
-# 2. Set up directory
-DASH_DIR="/opt/libreqos/src/jesync_dashboard"
-if [ -d "$DASH_DIR" ]; then
-    echo "⚠️ $DASH_DIR already exists. Skipping clone..."
-else
-    sudo mkdir -p /opt/libreqos/src
-    cd /opt/libreqos/src
-    echo "📥 Cloning dashboard repo..."
-    sudo git clone https://github.com/jesienazareth/jesync_dashboard.git
-    sudo chown -R $USER:$USER "$DASH_DIR"
-fi
+# 2. Clone Repo
+echo "📁 Cloning repository..."
+sudo mkdir -p /opt/libreqos/src
+cd /opt/libreqos/src
+sudo git clone https://github.com/jesienazareth/jesync_dashboard.git
+cd jesync_dashboard
+sudo chown -R $USER:$USER .
 
-cd "$DASH_DIR"
-
-# 3. Create virtual environment
-echo "🐍 Setting up Python venv..."
+# 3. Python Virtual Environment
+echo "🐍 Creating virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
+pip install --upgrade pip
 
-# 4. Install Python packages
-echo "📦 Installing Python packages..."
-pip install Flask Flask-Login Flask-SQLAlchemy
+# 4. Install Python Dependencies
+echo "📚 Installing Python packages..."
+pip install Flask Flask-Login Flask-SQLAlchemy python-dotenv
 
-# 5. Create systemd service
+# 5. Create .env with secure secret key
+echo "🔐 Generating secret key..."
+SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+echo "FLASK_SECRET_KEY=$SECRET_KEY" > .env
+
+# 6. Create systemd service
 echo "⚙️ Creating systemd service..."
-SERVICE_FILE="/etc/systemd/system/jesync_dashboard.service"
-sudo bash -c "cat > $SERVICE_FILE" <<EOF
+sudo tee /etc/systemd/system/jesync_dashboard.service > /dev/null <<EOL
 [Unit]
 Description=Jesync Dashboard Web UI
 After=network.target
@@ -42,25 +41,23 @@ After=network.target
 [Service]
 User=root
 Group=root
-WorkingDirectory=$DASH_DIR
-Environment=PATH=$DASH_DIR/venv/bin
-ExecStart=$DASH_DIR/venv/bin/python app.py
+WorkingDirectory=/opt/libreqos/src/jesync_dashboard
+Environment="PATH=/opt/libreqos/src/jesync_dashboard/venv/bin"
+ExecStart=/opt/libreqos/src/jesync_dashboard/venv/bin/python app.py
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
-EOF
+EOL
 
-# 6. Enable and start service
-echo "🚀 Starting Jesync Dashboard service..."
-sudo systemctl daemon-reexec
+# 7. Enable and Start the Dashboard
+echo "🚀 Enabling and starting service..."
 sudo systemctl daemon-reload
 sudo systemctl enable jesync_dashboard
-sudo systemctl start jesync_dashboard
+sudo systemctl restart jesync_dashboard
 
 echo "✅ Installation complete!"
-echo ""
-echo "🌐 Access the dashboard at: http://<your-server-ip>:5000"
-echo "🔐 Default login: admin / adminpass"
-echo ""
-echo "📎 To manage the service: sudo systemctl status|restart|stop jesync_dashboard"
+echo "🌐 Visit the dashboard at: http://<your-server-ip>:5000"
+echo "🔐 Default login:"
+echo "   Username: admin"
+echo "   Password: adminpass"
