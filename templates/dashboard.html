@@ -1,171 +1,202 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container mt-5">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jesync Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- 🔥 Real-time MikroTik Active Users Summary -->
-  <div id="mikrotik-summary">
-    <div class="alert alert-info text-center fw-bold mb-4" id="totals">
-      🔥 Total Active Hotspot: ... &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ...
-    </div>
-    <div id="router-cards"></div>
-  </div>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-  <!-- 🔧 Jesync Integration Files -->
-  <div class="card border-dark shadow-sm mt-4">
-    <div class="card-header bg-dark text-white">
-      <i class="bi bi-tools"></i> 🔧 Jesync Integration Files
-    </div>
-    <div class="card-body p-0">
-      <table class="table table-hover m-0">
-        <thead class="text-center">
-          <tr>
-            <th class="w-50 text-start">Filename</th>
-            <th class="w-25">Actions</th>
-            <th class="w-25">Backup</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for file in files %}
-            {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py", "jesyncmt.json"] %}
-            <tr>
-              <td class="text-start">{{ file }}</td>
-              <td class="text-center">
-                <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
-              </td>
-              <td class="text-center">
-                <form method="POST" action="{{ url_for('backup_file', filename=file) }}" class="d-inline">
-                  <button class="btn btn-outline-warning btn-sm">📦 Backup</button>
-                </form>
-                <form method="POST" action="{{ url_for('restore_file', filename=file) }}" class="d-inline">
-                  <button class="btn btn-outline-info btn-sm">♻️ Restore</button>
-                </form>
-              </td>
-            </tr>
-            {% endif %}
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 📡 LibreQoS Files -->
-  <div class="card border-primary shadow-sm mt-4">
-    <div class="card-header bg-primary text-white">
-      📡 LibreQoS Files
-    </div>
-    <div class="card-body p-0">
-      <table class="table table-hover m-0">
-        <thead class="text-center">
-          <tr>
-            <th class="w-50 text-start">Filename</th>
-            <th class="w-25">Actions</th>
-            <th class="w-25">Backup</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for file in files %}
-            {% if file in ["network.json", "ShapedDevices.csv", "lqos.conf"] %}
-            <tr>
-              <td class="text-start">{{ file }}</td>
-              <td class="text-center">
-                {% if file == "ShapedDevices.csv" %}
-                  <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-secondary btn-sm">View</a>
-                {% else %}
-                  <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
-                {% endif %}
-              </td>
-              <td class="text-center">
-                <form method="POST" action="{{ url_for('backup_file', filename=file) }}" class="d-inline">
-                  <button class="btn btn-outline-warning btn-sm">📦 Backup</button>
-                </form>
-                <form method="POST" action="{{ url_for('restore_file', filename=file) }}" class="d-inline">
-                  <button class="btn btn-outline-info btn-sm">♻️ Restore</button>
-                </form>
-              </td>
-            </tr>
-            {% endif %}
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 🔁 LibreQoS Services -->
-  <div class="card border-success shadow-sm mt-4">
-    <div class="card-header bg-success text-white">
-      🔄 Jesync | LibreQoS Services
-    </div>
-    <div class="card-body p-0">
-      <table class="table table-hover m-0">
-        <thead class="text-center">
-          <tr>
-            <th class="w-50 text-start">Service</th>
-            <th class="w-25 text-center">Status</th>
-            <th class="w-25 text-center">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard"] %}
-          <tr>
-            <td class="text-start">{{ service.replace('.service', '') }}</td>
-            <td class="text-center">
-              {% if service_statuses[service] == 'active' %}
-                <span class="badge bg-success">Active</span>
-              {% else %}
-                <span class="badge bg-danger">Inactive</span>
-              {% endif %}
-            </td>
-            <td class="text-center">
-              <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
-                <button type="submit" class="btn btn-outline-success btn-sm">
-                  <i class="bi bi-arrow-repeat"></i> Restart
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- 🔄 Real-time Polling Script -->
-<script>
-  async function fetchActiveSessions() {
-    try {
-      const res = await fetch("/api/active_sessions");
-      const data = await res.json();
-
-      // Update totals
-      document.getElementById("totals").innerHTML =
-        `🔥 Total Active Hotspot: ${data.total_hotspot} &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ${data.total_pppoe}`;
-
-      // Build router cards
-      const container = document.getElementById("router-cards");
-      container.innerHTML = ""; // clear
-
-      data.mikrotik_data.forEach(router => {
-        const card = document.createElement("div");
-        card.className = "card border-secondary mb-3";
-        card.innerHTML = `
-          <div class="card-header bg-secondary text-white fw-bold">
-            📡 MikroTik: ${router.name} (${router.address})
-          </div>
-          <div class="card-body d-flex justify-content-between">
-            <span>Hotspot Users: <strong>${router.hotspot}</strong></span>
-            <span>PPPoE Users: <strong>${router.pppoe}</strong></span>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    } catch (err) {
-      console.error("Failed to fetch active sessions:", err);
+  <style>
+    :root {
+      --bs-primary: #007bff;
+      --bs-dark-bg: #121212;
+      --bs-accent: #00e5ff;
     }
-  }
 
-  // Initial fetch and poll every 10 seconds
-  fetchActiveSessions();
-  setInterval(fetchActiveSessions, 10000);
-</script>
-{% endblock %}
+    body {
+      background-color: #f8f9fa;
+    }
+
+    body.dark-mode {
+      background-color: var(--bs-dark-bg);
+      color: #ddd;
+    }
+
+    body.dark-mode .card,
+    body.dark-mode table {
+      background-color: #1e1e1e;
+      color: #ddd;
+    }
+
+    body.dark-mode .table-hover tbody tr:hover {
+      background-color: #2e2e2e;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      padding: 15px 0;
+      font-size: 0.9rem;
+    }
+
+    body.dark-mode footer {
+      background-color: #1e1e1e;
+      color: #ccc;
+    }
+
+    .libreqos-banner {
+      background-color: #222;
+      color: #ffc107;
+      font-size: 14px;
+      padding: 6px 15px;
+      text-align: center;
+      border: 1px solid #444;
+      margin: 10px auto 0 auto;
+      max-width: 100%;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 0 3px rgba(0,0,0,0.4);
+    }
+
+    .libreqos-banner a {
+      color: #00bfff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .libreqos-banner a:hover {
+      text-decoration: underline;
+    }
+
+    body.dark-mode .libreqos-banner {
+      background-color: #1a1a1a;
+      border-color: #444;
+    }
+
+    .header-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .theme-toggle-btn {
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 576px) {
+      .header-buttons {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 🔔 Notification Banner -->
+  {% include 'banner.html' %}
+
+  <!-- Header -->
+  <div class="container mt-3 mb-1">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <h3 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h3>
+      <div class="header-buttons">
+        <!-- Always show toggle theme -->
+        <button onclick="toggleTheme()" class="btn btn-primary theme-toggle-btn">
+          <i class="bi bi-circle-half"></i> Toggle Theme
+        </button>
+
+        <!-- Only show below if logged in -->
+        {% if current_user.is_authenticated %}
+        <form method="POST" action="{{ url_for('update_jesync') }}" class="d-inline">
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-clockwise"></i> Update Jesync
+          </button>
+        </form>
+        <a href="{{ url_for('users') }}" class="btn btn-outline-dark">
+          <i class="bi bi-people"></i> Manage Users
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔧 Page Content -->
+  {% block content %}{% endblock %}
+
+  <!-- 🔻 Footer -->
+  <footer class="border-top mt-5 py-3">
+    <div class="container text-center">
+      <small>
+        © Jesync Dashboard 2025 |
+        <a href="https://facebook.com/jesync28" target="_blank">Facebook</a> •
+        <a href="https://github.com/jesienazareth/jesync_dashboard" target="_blank">GitHub</a> •
+        <a href="https://paypal.me/jnhl" target="_blank">Donate via PayPal</a>
+      </small>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- 🌗 Dark Mode Logic -->
+  <script>
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-mode");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    }
+  </script>
+
+  <!-- 📡 Realtime MikroTik Fetch -->
+  <script>
+    async function fetchMikrotikData() {
+      try {
+        const res = await fetch("/api/active_sessions");
+        const data = await res.json();
+
+        const totalDiv = document.getElementById("totals");
+        if (totalDiv) {
+          totalDiv.innerHTML = `🔥 Total Active Hotspot: ${data.total_hotspot} &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ${data.total_pppoe}`;
+        }
+
+        const container = document.getElementById("router-cards");
+        if (container) {
+          container.innerHTML = "";
+          data.mikrotik_data.forEach(router => {
+            const card = `
+              <div class="card border-secondary mb-3">
+                <div class="card-header bg-secondary text-white fw-bold">
+                  📡 MikroTik: ${router.name} (${router.address})
+                </div>
+                <div class="card-body d-flex justify-content-between">
+                  <span>Hotspot Users: <strong>${router.hotspot}</strong></span>
+                  <span>PPPoE Users: <strong>${router.pppoe}</strong></span>
+                </div>
+              </div>
+            `;
+            container.innerHTML += card;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch MikroTik data", err);
+      }
+    }
+
+    setInterval(fetchMikrotikData, 5000); // ⏱ Update every 5 seconds
+    window.onload = fetchMikrotikData;
+  </script>
+
+</body>
+</html>
