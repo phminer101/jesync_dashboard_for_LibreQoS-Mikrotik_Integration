@@ -4,6 +4,15 @@
   <h4 class="mb-3">📝 {{ "Editing" if can_edit else "Viewing" }}: {{ filename }}</h4>
   <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">← Back to Home</a>
 
+  {% if can_edit %}
+    <form method="POST" action="{{ url_for('backup_file', filename=filename) }}" class="d-inline">
+      <button type="submit" class="btn btn-outline-warning mb-3">📦 Backup</button>
+    </form>
+    <form method="POST" action="{{ url_for('restore_file', filename=filename) }}" class="d-inline">
+      <button type="submit" class="btn btn-outline-info mb-3">♻️ Restore</button>
+    </form>
+  {% endif %}
+
   {% if file_type == "csv" %}
     <div class="table-responsive">
       <table id="csvTable" class="table table-bordered table-striped table-sm">
@@ -11,16 +20,12 @@
         <tbody></tbody>
       </table>
     </div>
-
-    <!-- DataTables support -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
     <script>
       const csvContent = `{{ content | replace('\r\n', '\\n') | safe }}`;
       const rows = csvContent.trim().split("\n").map(row => row.split(","));
-
       const table = document.getElementById("csvTable");
       const thead = table.querySelector("thead");
       const tbody = table.querySelector("tbody");
@@ -47,23 +52,18 @@
         $('#csvTable').DataTable();
       });
     </script>
-
   {% elif file_type == "json" %}
     <div id="editorArea"></div>
     {% if can_edit %}
       <button id="saveBtn" class="btn btn-success mt-3">💾 Save</button>
       <div id="status" class="mt-2 text-info fw-bold"></div>
-    {% else %}
-      <div class="alert alert-warning mt-3">You have view-only access.</div>
     {% endif %}
-
     <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.js"></script>
     <script>
       const container = document.getElementById("editorArea");
       const editor = new JSONEditor(container, { mode: 'tree', modes: ['code', 'tree'], mainMenuBar: true });
       editor.set({{ content|safe }});
-
       {% if can_edit %}
       document.getElementById("saveBtn").onclick = () => {
         fetch("/api/save/{{ filename }}", {
@@ -76,14 +76,12 @@
       };
       {% endif %}
     </script>
-
   {% else %}
     <textarea id="editorArea">{{ content }}</textarea>
     {% if can_edit %}
       <button id="saveBtn" class="btn btn-success mt-3">💾 Save</button>
       <div id="status" class="mt-2 text-info fw-bold"></div>
     {% endif %}
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
@@ -92,7 +90,6 @@
         lineNumbers: true,
         mode: "python"
       });
-
       {% if can_edit %}
       document.getElementById("saveBtn").onclick = () => {
         fetch("/api/save/{{ filename }}", {
