@@ -24,7 +24,7 @@ A web-based GUI to manage Jesync and LibreQoS configuration files
 ## 🚀 Quick Installation (One Command)
 
 ```bash
-bash <(curl -sSL bash <(curl -sSL https://github.com/jesienazareth/jesync_dashboard/raw/main/install_jesync_dashboard.sh)
+bash <(curl -sSL https://github.com/jesienazareth/jesync_dashboard/raw/main/install_jesync_dashboard.sh)
 
 ```
 
