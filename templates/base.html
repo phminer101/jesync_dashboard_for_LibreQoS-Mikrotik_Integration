@@ -1,139 +1,158 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Jesync Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <meta charset="utf-8">
+  <title>Jesync Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --bs-primary: #007bff;
+      --bs-dark-bg: #121212;
+      --bs-accent: #00e5ff;
+    }
 
-    <style>
-      body {
-        background-color: #f8f9fa;
+    body {
+      background-color: #f8f9fa;
+    }
+
+    body.dark-mode {
+      background-color: var(--bs-dark-bg);
+      color: #ddd;
+    }
+
+    body.dark-mode .card,
+    body.dark-mode table {
+      background-color: #1e1e1e;
+      color: #ddd;
+    }
+
+    body.dark-mode .table-hover tbody tr:hover {
+      background-color: #2e2e2e;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      padding: 15px 0;
+      font-size: 0.9rem;
+    }
+
+    body.dark-mode footer {
+      background-color: #1e1e1e;
+      color: #ccc;
+    }
+
+    .libreqos-banner {
+      background-color: #222;
+      color: #ffc107;
+      font-size: 14px;
+      padding: 6px 15px;
+      text-align: center;
+      border: 1px solid #444;
+      margin: 10px auto 0 auto;
+      max-width: 100%;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 0 3px rgba(0,0,0,0.4);
+    }
+
+    .libreqos-banner a {
+      color: #00bfff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .libreqos-banner a:hover {
+      text-decoration: underline;
+    }
+
+    body.dark-mode .libreqos-banner {
+      background-color: #1a1a1a;
+      border-color: #444;
+    }
+
+    .header-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .theme-toggle-btn {
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 576px) {
+      .header-buttons {
+        justify-content: center;
       }
+    }
+  </style>
+</head>
 
-      body.dark-mode {
-        background-color: #121212;
-        color: #eee;
-      }
+<body>
 
-      footer {
-        background-color: #f1f1f1;
-        padding: 15px 0;
-        font-size: 0.9rem;
-      }
+  <!-- 🔔 Notification Banner -->
+  {% include 'banner.html' %}
 
-      footer a {
-        text-decoration: none;
-        color: #007bff;
-      }
-
-      footer a:hover {
-        text-decoration: underline;
-      }
-
-      body.dark-mode footer {
-        background-color: #1e1e1e;
-        color: #ccc;
-      }
-
-      /* ✅ Dark mode additions */
-      body.dark-mode .card {
-        background-color: #1e1e1e;
-        color: #ddd;
-      }
-
-      body.dark-mode table {
-        color: #ddd;
-      }
-
-      body.dark-mode .table-hover tbody tr:hover {
-        background-color: #333;
-      }
-
-      /* 🔔 Notification Banner Styling */
-      .libreqos-banner {
-        background-color: #222;
-        color: #ffc107;
-        font-size: 14px;
-        padding: 6px 15px;
-        text-align: center;
-        border: 1px solid #444;
-        margin: 10px auto 0 auto;
-        max-width: 100%;
-        border-radius: 4px;
-        font-family: Arial, sans-serif;
-        box-shadow: 0 0 3px rgba(0,0,0,0.4);
-      }
-
-      .libreqos-banner a {
-        color: #00bfff;
-        text-decoration: none;
-        font-weight: bold;
-      }
-
-      .libreqos-banner a:hover {
-        text-decoration: underline;
-      }
-
-      body.dark-mode .libreqos-banner {
-        background-color: #1a1a1a;
-        color: #ffc107;
-        border-color: #444;
-      }
-
-      .theme-toggle {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        z-index: 999;
-      }
-    </style>
-  </head>
-
-  <body>
-   
-    <!-- 🔔 Notification Banner -->
-    {% include 'banner.html' %}
-
-    <!-- 🔧 Page Content -->
-    {% block content %}{% endblock %}
-
-    <!-- 🔻 Footer -->
- <footer class="bg-light border-top mt-5 py-3">
-  <div class="container text-center">
-    <small>
-      © Jesync Dashboard 2025|
-      <a href="https://facebook.com/jesync28" target="_blank">Facebook</a> •
-      <a href="https://github.com/jesienazareth/jesync_dashboard" target="_blank">GitHub</a> •
-      <a href="https://paypal.me/jnhl" target="_blank">Donate via PayPal</a>
-    </small>
+  <!-- Header -->
+  <div class="container mt-3 mb-1">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <h3 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h3>
+      <div class="header-buttons">
+        <button onclick="toggleTheme()" class="btn btn-primary theme-toggle-btn">
+          <i class="bi bi-circle-half"></i> Toggle Theme
+        </button>
+        <form method="POST" action="{{ url_for('update_jesync') }}" class="d-inline">
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-clockwise"></i> Update Jesync
+          </button>
+        </form>
+        <a href="{{ url_for('users') }}" class="btn btn-outline-dark">
+          <i class="bi bi-people"></i> Manage Users
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      </div>
+    </div>
   </div>
-</footer>
 
+  <!-- 🔧 Page Content -->
+  {% block content %}{% endblock %}
 
+  <!-- 🔻 Footer -->
+  <footer class="border-top mt-5 py-3">
+    <div class="container text-center">
+      <small>
+        © Jesync Dashboard 2025 |
+        <a href="https://facebook.com/jesync28" target="_blank">Facebook</a> •
+        <a href="https://github.com/jesienazareth/jesync_dashboard" target="_blank">GitHub</a> •
+        <a href="https://paypal.me/jnhl" target="_blank">Donate via PayPal</a>
+      </small>
+    </div>
+  </footer>
 
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- 🌗 Dark Mode Logic -->
+  <script>
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-mode");
+    }
 
-    <!-- 🌗 Dark Mode Logic -->
-    <script>
-  // Theme toggle persistence
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark-mode");
-  }
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    }
+  </script>
 
-  function toggleTheme() {
-    document.body.classList.toggle("dark-mode");
-    localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-  }
-</script>
-
-	
-  </body>
+</body>
 </html>
