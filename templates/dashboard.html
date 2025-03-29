@@ -1,22 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-5">
-  <!-- Header with Toggle Theme, Manage Users, Logout -->
- <div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h2>
-  <div class="d-flex gap-2">
-  <button class="btn btn-light" onclick="toggleTheme()">🌓 Toggle Theme</button>
-  <a href="{{ url_for('users') }}" class="btn btn-outline-secondary">Manage Users</a>
-  <form method="POST" action="{{ url_for('update_jesync') }}">
-    <button class="btn btn-outline-primary">🔄 Update Jesync</button>
-  </form>
-  <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-</div>
 
-</div>
+ 
 
- <!-- Jesync Integration Files -->
-  <div class="card border-dark shadow-sm mt-3">
+  <!-- 🔥 Overall Active Totals -->
+  <div class="alert alert-info text-center fw-bold mb-4">
+    🔥 Total Active Hotspot: {{ total_hotspot }} &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: {{ total_pppoe }}
+  </div>
+
+  <!-- 📡 Per MikroTik Router Summary -->
+  {% for router in mikrotik_data %}
+  <div class="card border-secondary mb-3">
+    <div class="card-header bg-secondary text-white fw-bold">
+      📡 MikroTik: {{ router.name }} ({{ router.address }})
+    </div>
+    <div class="card-body d-flex justify-content-between">
+      <span>Hotspot Users: <strong>{{ router.hotspot }}</strong></span>
+      <span>PPPoE Users: <strong>{{ router.pppoe }}</strong></span>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- 🔧 Jesync Integration Files -->
+  <div class="card border-dark shadow-sm mt-4">
     <div class="card-header bg-dark text-white">
       <i class="bi bi-tools"></i> 🔧 Jesync Integration Files
     </div>
@@ -31,7 +38,7 @@
         </thead>
         <tbody>
           {% for file in files %}
-            {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py"] %}
+            {% if file in ["jesync_static_device.json", "config.json", "updatecsv.py", "jesyncmt.json"] %}
             <tr>
               <td class="text-start">{{ file }}</td>
               <td class="text-center">
@@ -53,7 +60,7 @@
     </div>
   </div>
 
-  <!-- LibreQoS Files -->
+  <!-- 📡 LibreQoS Files -->
   <div class="card border-primary shadow-sm mt-4">
     <div class="card-header bg-primary text-white">
       📡 LibreQoS Files
@@ -95,7 +102,7 @@
     </div>
   </div>
 
-  <!-- LibreQoS Services -->
+  <!-- 🔁 LibreQoS Services -->
   <div class="card border-success shadow-sm mt-4">
     <div class="card-header bg-success text-white">
       🔄 Jesync | LibreQoS Services
@@ -110,9 +117,9 @@
           </tr>
         </thead>
         <tbody>
-          {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"] %}
+          {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard"] %}
           <tr>
-            <td class="text-start">{{ service }}</td>
+            <td class="text-start">{{ service.replace('.service', '') }}</td>
             <td class="text-center">
               {% if service_statuses[service] == 'active' %}
                 <span class="badge bg-success">Active</span>
