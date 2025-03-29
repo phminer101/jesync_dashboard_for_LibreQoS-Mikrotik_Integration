@@ -107,10 +107,6 @@ Access the dashboard in your browser at `http://<your_server_ip>:<port>`.
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 
 ## 🛠 Manual Installation (Step-by-Step)
 
@@ -281,6 +277,9 @@ sudo rm -rf /opt/libreqos/src/jesync_dashboard
 
 ---
 
+## 📝 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 ### 💖 Support & Donations
