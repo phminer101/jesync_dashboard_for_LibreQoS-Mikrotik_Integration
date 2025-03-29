@@ -12,14 +12,15 @@
   <!-- Jesync Integration Files -->
   <div class="card border-dark shadow-sm mt-3">
     <div class="card-header bg-dark text-white">
-      <i class="bi bi-tools"></i>🔧Jesync Integration Files
+      <i class="bi bi-tools"></i> 🔧 Jesync Integration Files
     </div>
     <div class="card-body p-0">
       <table class="table table-hover m-0">
         <thead class="text-center">
           <tr>
-            <th class="w-75 text-start">Filename</th>
+            <th class="w-50 text-start">Filename</th>
             <th class="w-25">Actions</th>
+            <th class="w-25">Backup</th>
           </tr>
         </thead>
         <tbody>
@@ -29,6 +30,14 @@
               <td class="text-start">{{ file }}</td>
               <td class="text-center">
                 <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
+              </td>
+              <td class="text-center">
+                <form method="POST" action="{{ url_for('backup_file', filename=file) }}" class="d-inline">
+                  <button class="btn btn-outline-warning btn-sm">📦 Backup</button>
+                </form>
+                <form method="POST" action="{{ url_for('restore_file', filename=file) }}" class="d-inline">
+                  <button class="btn btn-outline-info btn-sm">♻️ Restore</button>
+                </form>
               </td>
             </tr>
             {% endif %}
@@ -47,8 +56,9 @@
       <table class="table table-hover m-0">
         <thead class="text-center">
           <tr>
-            <th class="w-75 text-start">Filename</th>
+            <th class="w-50 text-start">Filename</th>
             <th class="w-25">Actions</th>
+            <th class="w-25">Backup</th>
           </tr>
         </thead>
         <tbody>
@@ -63,6 +73,14 @@
                   <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-primary btn-sm">Edit</a>
                 {% endif %}
               </td>
+              <td class="text-center">
+                <form method="POST" action="{{ url_for('backup_file', filename=file) }}" class="d-inline">
+                  <button class="btn btn-outline-warning btn-sm">📦 Backup</button>
+                </form>
+                <form method="POST" action="{{ url_for('restore_file', filename=file) }}" class="d-inline">
+                  <button class="btn btn-outline-info btn-sm">♻️ Restore</button>
+                </form>
+              </td>
             </tr>
             {% endif %}
           {% endfor %}
@@ -71,42 +89,43 @@
     </div>
   </div>
 
-<!-- LibreQoS Services -->
-<div class="card border-success shadow-sm mt-4">
-  <div class="card-header bg-success text-white">
-    🔄 Jesync | LibreQoS Services
-  </div>
-  <div class="card-body p-0">
-    <table class="table table-hover m-0">
-      <thead class="text-center">
-        <tr>
-          <th class="w-50 text-start">Service</th>
-          <th class="w-25 text-center">Status</th>
-          <th class="w-25 text-center">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"] %}
-        <tr>
-          <td class="text-start">{{ service }}</td>
-          <td class="text-center">
-            {% if service_statuses[service] == 'active' %}
-              <span class="badge bg-success">Active</span>
-            {% else %}
-              <span class="badge bg-danger">Inactive</span>
-            {% endif %}
-          </td>
-          <td class="text-center">
-            <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
-              <button type="submit" class="btn btn-outline-success btn-sm">
-                <i class="bi bi-arrow-repeat"></i> Restart
-              </button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- LibreQoS Services -->
+  <div class="card border-success shadow-sm mt-4">
+    <div class="card-header bg-success text-white">
+      🔄 Jesync | LibreQoS Services
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover m-0">
+        <thead class="text-center">
+          <tr>
+            <th class="w-50 text-start">Service</th>
+            <th class="w-25 text-center">Status</th>
+            <th class="w-25 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"] %}
+          <tr>
+            <td class="text-start">{{ service }}</td>
+            <td class="text-center">
+              {% if service_statuses[service] == 'active' %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-danger">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                  <i class="bi bi-arrow-repeat"></i> Restart
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}
