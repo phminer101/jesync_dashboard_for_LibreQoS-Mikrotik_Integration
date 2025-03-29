@@ -1,41 +1,50 @@
 #!/bin/bash
 
-# Auto Update Script for Jesync UI Tool Dashboard
-# GitHub: https://github.com/jesienazareth/jesync_dashboard
+# ==========================================
+# 🚀 JESYNC UI TOOL DASHBOARD Auto-Updater
+# ==========================================
 
-set -e
+set -e  # Exit immediately on error
 
-APP_DIR="/opt/libreqos/src/jesync_dashboard"
-VENV_PATH="$APP_DIR/venv/bin/activate"
-SERVICE_NAME="jesync_dashboard"
+REPO_DIR="/opt/libreqos/src/jesync_dashboard"
+BACKUP_DIR="/opt/jesyncbak/autoupdate_$(date +%Y%m%d_%H%M%S)"
+LOG_FILE="$REPO_DIR/update.log"
 
-echo "🔄 Updating Jesync UI Tool Dashboard..."
+echo "📦 Starting Jesync Dashboard update..." | tee -a "$LOG_FILE"
+echo "🕒 $(date)" | tee -a "$LOG_FILE"
+ 
+# Step 1: Backup current files
+echo "📁 Backing up current dashboard to $BACKUP_DIR" | tee -a "$LOG_FILE"
+mkdir -p "$BACKUP_DIR"
+cp -r "$REPO_DIR"/* "$BACKUP_DIR"
 
-# 1. Navigate to the app directory
-cd "$APP_DIR" || { echo "❌ App directory not found: $APP_DIR"; exit 1; }
+# Step 2: Pull latest updates from GitHub
+echo "⬇️ Pulling latest changes from GitHub..." | tee -a "$LOG_FILE"
+cd "$REPO_DIR"
 
-# 2. Optional: Stash local changes to prevent merge issues
-echo "📦 Stashing local changes (if any)..."
-git stash --include-untracked || true
+# Handle untracked updatejesync.sh safely
+if [ -f "$REPO_DIR/updatejesync.sh" ] && ! git ls-files --error-unmatch updatejesync.sh > /dev/null 2>&1; then
+  echo "⚠️ Detected untracked updatejesync.sh — staging it to avoid conflict..." | tee -a "$LOG_FILE"
+  git add updatejesync.sh
+fi
 
-# 3. Pull the latest changes from GitHub
-echo "⬇️ Pulling latest changes from GitHub..."
-git pull origin main
+git stash save "Local changes before auto-update" || true
+git pull origin main | tee -a "$LOG_FILE"
+git stash pop || true
 
-# 4. Activate the virtual environment
-echo "🐍 Activating Python virtual environment..."
-source "$VENV_PATH"
 
-# 5. Install/upgrade Python dependencies
-echo "📦 Installing/updating Python requirements..."
-pip install -r requirements.txt
+# Step 3: Reinstall/update Python dependencies
+echo "📦 Installing Python dependencies..." | tee -a "$LOG_FILE"
+source "$REPO_DIR/venv/bin/activate"
+pip install --upgrade pip
+pip install -r requirements.txt | tee -a "$LOG_FILE"
 
-# 6. Restart the dashboard service
-echo "🚀 Restarting $SERVICE_NAME service..."
-sudo systemctl restart "$SERVICE_NAME"
+# Step 4: Restart systemd service
+echo "🔁 Restarting jesync_dashboard service..." | tee -a "$LOG_FILE"
+sudo systemctl restart jesync_dashboard
 
-echo "✅ Jesync Dashboard successfully updated and restarted!"
-
+echo "✅ Jesync Dashboard updated successfully." | tee -a "$LOG_FILE"
+echo "==========================================" | tee -a "$LOG_FILE"
 
 ################################################################################
 ## 📝 License
