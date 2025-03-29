@@ -1,16 +1,57 @@
-# Jesync Dashboard – Full Installation Guide
+# JESYNC UI TOOL DASHBOARD
+
+**JESYNC UI TOOL DASHBOARD** is a powerful, user-friendly web interface designed to simplify the management and automation of Jesync configuration files, LibreQoS settings, system services, and backups. It brings modern usability to advanced system operations, particularly for environments using LibreQoS and MikroTik integrations.
+
+---
 
 A web-based GUI to manage Jesync and LibreQoS configuration files
 ![image](https://github.com/user-attachments/assets/8e5844bd-b8a4-45c1-8ffd-78a63d65ee51)
 ![image](https://github.com/user-attachments/assets/32b62b80-123b-40bc-9d8c-231d2532ef0a)
 ![image](https://github.com/user-attachments/assets/5232e647-9a58-4a9a-9503-19768f9205a0)
+## 🚀 Key Features
 
+### ✅ Intuitive Dashboard
+- View and edit Jesync and LibreQoS configuration files from a centralized dashboard.
+- Supports JSON, Python, CSV, and plain text files.
+- View-only protection for sensitive or read-only roles.
 
-## 📊 Features
-- ✅ Edit .json, .py, .conf, and view .csv
-- 🔒 Login system with role-based access
-- 🌗 Built-in dark mode
-- 🔁 Auto-start on boot via systemd
+### ✅ LibreQoS Integration
+- Seamlessly manage essential LibreQoS files (`network.json`, `lqos.conf`, `ShapedDevices.csv`) directly from the UI.
+- Restart LibreQoS services (`lqosd`, `lqos_node_manager`, `lqos_scheduler`) with a click.
+- Auto-status display shows live health of services (active/inactive) using `systemctl`.
+
+### ✅ Jesync Automation
+- Designed for PisoWiFi-style systems that depend on Jesync + MikroTik API + updatecsv.py.
+- Easily manage and restart `updatecsv.service` for automated device updates and control.
+
+### ✅ User Management
+- Role-based login system (admin and viewer).
+- Admins can manage users, including creating, editing, or deleting accounts.
+- Prevents accidental lockout (e.g., cannot delete last admin or self).
+
+### ✅ File Backup & Restore
+- One-click **Backup** and **Restore** options available for each editable file.
+- Backups stored in `/opt/jesyncbak`, preserving historical changes.
+- Ensures safe testing and editing with quick rollback capability.
+
+### ✅ Systemd Service Integration
+- JESYNC UI runs as a systemd service (`jesync_dashboard.service`).
+- Hassle-free setup with one-line installation script.
+
+---
+
+## 💡 Why Use JESYNC UI TOOL?
+
+Managing LibreQoS and Jesync manually can be tedious and error-prone — especially for less technical users. JESYNC UI TOOL streamlines the process:
+
+- No need to SSH into your server to edit files.
+- Avoid misconfigurations and typos with a clean editor.
+- Visually confirm your service statuses without CLI commands.
+- Quickly fix issues or roll back broken configs with backup & restore.
+
+It’s an ideal companion for LibreQoS operators, PisoWifi developers, and system admins who value productivity, clarity, and peace of mind.
+
+---
 
 ## ✅ Requirements
 
@@ -33,7 +74,39 @@ This will:
 - Clone the repo from GitHub
 - Set up virtual environment
 - Create & enable systemd service
+## 📦 Quick Installation
 
+Clone and run the installer:
+
+```bash
+git clone https://github.com/jesienazareth/jesync_dashboard.git
+cd jesync_dashboard
+./install_jesync_dashboard.sh
+```
+
+---
+
+## 🛠️ Usage
+
+After installation, start the dashboard service:
+
+```bash
+sudo systemctl start jesync_dashboard.service
+```
+
+Enable the service to start on boot:
+
+```bash
+sudo systemctl enable jesync_dashboard.service
+```
+
+Access the dashboard in your browser at `http://<your_server_ip>:<port>`.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 ## 🧱 Manual Installation (Step-by-Step)
 
 ### 🔹 Step 1: Update and Install Packages
