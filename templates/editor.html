@@ -4,6 +4,11 @@
   <h4 class="mb-3">📝 {{ "Editing" if can_edit else "Viewing" }}: {{ filename }}</h4>
   <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">← Back to Home</a>
 
+  <div class="input-group mb-3">
+    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search content...">
+    <button class="btn btn-outline-secondary" onclick="performSearch()">Search</button>
+  </div>
+
   {% if can_edit %}
     <form method="POST" action="{{ url_for('backup_file', filename=filename) }}" class="d-inline">
       <button type="submit" class="btn btn-outline-warning mb-3">📦 Backup</button>
@@ -52,6 +57,7 @@
         $('#csvTable').DataTable();
       });
     </script>
+
   {% elif file_type == "json" %}
     <div id="editorArea"></div>
     {% if can_edit %}
@@ -64,6 +70,7 @@
       const container = document.getElementById("editorArea");
       const editor = new JSONEditor(container, { mode: 'tree', modes: ['code', 'tree'], mainMenuBar: true });
       editor.set({{ content|safe }});
+
       {% if can_edit %}
       document.getElementById("saveBtn").onclick = () => {
         fetch("/api/save/{{ filename }}", {
@@ -76,6 +83,7 @@
       };
       {% endif %}
     </script>
+
   {% else %}
     <textarea id="editorArea">{{ content }}</textarea>
     {% if can_edit %}
@@ -85,11 +93,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/search/searchcursor.min.js"></script>
+
     <script>
       const editor = CodeMirror.fromTextArea(document.getElementById("editorArea"), {
         lineNumbers: true,
         mode: "python"
       });
+
       {% if can_edit %}
       document.getElementById("saveBtn").onclick = () => {
         fetch("/api/save/{{ filename }}", {
@@ -101,6 +112,20 @@
         });
       };
       {% endif %}
+
+      // 🔍 Search functionality
+      function performSearch() {
+        const query = document.getElementById("searchInput").value;
+        if (!query) return;
+
+        editor.operation(() => {
+          const cursor = editor.getSearchCursor(query);
+          if (cursor.findNext()) {
+            editor.setSelection(cursor.from(), cursor.to());
+            editor.scrollIntoView({ from: cursor.from(), to: cursor.to() });
+          }
+        });
+      }
     </script>
   {% endif %}
 </div>
