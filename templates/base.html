@@ -106,9 +106,13 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
       <h3 class="fw-bold">📊 JESYNC UI TOOL DASHBOARD</h3>
       <div class="header-buttons">
+        <!-- Always show toggle theme -->
         <button onclick="toggleTheme()" class="btn btn-primary theme-toggle-btn">
           <i class="bi bi-circle-half"></i> Toggle Theme
         </button>
+
+        <!-- Only show below if logged in -->
+        {% if current_user.is_authenticated %}
         <form method="POST" action="{{ url_for('update_jesync') }}" class="d-inline">
           <button type="submit" class="btn btn-outline-primary">
             <i class="bi bi-arrow-clockwise"></i> Update Jesync
@@ -120,6 +124,7 @@
         <a href="{{ url_for('logout') }}" class="btn btn-danger">
           <i class="bi bi-box-arrow-right"></i> Logout
         </a>
+        {% endif %}
       </div>
     </div>
   </div>
