@@ -2,8 +2,8 @@ import json
 import ast
 
 FILES = {
-    "jesync_static_device.json": "/opt/libreqos/src/jesync_dashboard/jesync_static_device.json",
-    "config.json": "/opt/libreqos/src/jesync_dashboard/config.json",
+    "jesync_static_device.json": "/opt/libreqos/src/jesync_static_device.json",
+    "config.json": "/opt/libreqos/src/config.json",
     "updatecsv.py": "/opt/libreqos/src/updatecsv.py",
     "jesyncmt.json": "/opt/libreqos/src/jesync_dashboard/jesyncmt.json",  # ✅ Add this line
     "network.json": "/etc/libreqos/network.json",
