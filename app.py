@@ -5,11 +5,11 @@ from sqlalchemy.exc import IntegrityError
 from db import db, UserModel
 from auth import User, get_user_by_username, check_password, has_edit_access
 from config import FILES, validate_and_save
+from routeros_api import RouterOsApiPool
 import subprocess
 import os
 import shutil
-
-# 🔐 Optional: Generate secret key dynamically
+import json
 import secrets
 from dotenv import load_dotenv
 
@@ -19,7 +19,6 @@ app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize DB and LoginManager
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -33,9 +32,6 @@ def load_user(user_id):
     user_model = UserModel.query.get(int(user_id))
     return User(user_model) if user_model else None
 
-# ======================
-# Systemd Service Status
-# ======================
 def get_service_status(service):
     try:
         result = subprocess.run(
@@ -48,9 +44,6 @@ def get_service_status(service):
     except subprocess.CalledProcessError:
         return "inactive"
 
-# ======================
-# Routes
-# ======================
 
 @app.route("/")
 def index():
@@ -75,16 +68,69 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv"]
+    service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard.service"]
     service_statuses = {s: get_service_status(s) for s in service_list}
-    return render_template("dashboard.html", files=FILES.keys(), user=current_user, service_statuses=service_statuses)
+
+    mikrotik_routers = load_mikrotik_config()
+    mikrotik_data = []
+    total_hotspot = 0
+    total_pppoe = 0
+
+    for router in mikrotik_routers:
+        hotspot_count, pppoe_count = fetch_active_sessions(router)
+        mikrotik_data.append({
+            "name": router["name"],
+            "address": router["address"],
+            "hotspot": hotspot_count,
+            "pppoe": pppoe_count
+        })
+        total_hotspot += hotspot_count
+        total_pppoe += pppoe_count
+
+    return render_template("dashboard.html", files=FILES.keys(), user=current_user,
+                           service_statuses=service_statuses, mikrotik_data=mikrotik_data,
+                           total_hotspot=total_hotspot, total_pppoe=total_pppoe)
+
+def load_mikrotik_config():
+    CONFIG_PATH = "/opt/libreqos/src/jesync_dashboard/jesyncmt.json"
+    try:
+        with open(CONFIG_PATH, "r") as f:
+            return json.load(f).get("routers", [])
+    except Exception as e:
+        print(f"Failed to load MikroTik config: {e}")
+        return []
+
+def fetch_active_sessions(router):
+    active_hotspot = 0
+    active_pppoe = 0
+    try:
+        api_pool = RouterOsApiPool(
+            host=router["address"],
+            username=router["username"],
+            password=router["password"],
+            port=router.get("port", 8728),
+            use_ssl=False,
+            plaintext_login=True
+        )
+        api = api_pool.get_api()
+
+        if router.get("hotspot", True):
+            hotspot_resource = api.get_resource("/ip/hotspot/active")
+            active_hotspot = len(hotspot_resource.get())
+
+        if router.get("pppoe", True):
+            pppoe_resource = api.get_resource("/ppp/active")
+            active_pppoe = len(pppoe_resource.get())
+
+    except Exception as e:
+        print(f"[{router.get('name')}] API Error: {e}")
+    return active_hotspot, active_pppoe
 
 @app.route("/edit/<filename>")
 @login_required
 def edit_file(filename):
     if filename not in FILES:
         return "Invalid file", 404
-
     with open(FILES[filename], "r") as f:
         content = f.read()
 
@@ -99,7 +145,8 @@ def edit_file(filename):
 
     view_only = filename.endswith(".csv") or not has_edit_access(current_user)
 
-    return render_template("editor.html", filename=filename, content=content, file_type=file_type, can_edit=not view_only)
+    return render_template("editor.html", filename=filename, content=content,
+                           file_type=file_type, can_edit=not view_only)
 
 @app.route("/api/save/<filename>", methods=["POST"])
 @login_required
@@ -107,7 +154,7 @@ def save_file(filename):
     if not has_edit_access(current_user):
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     if filename not in FILES or filename.endswith(".csv"):
-        return jsonify({"status": "error", "message": "Read-only file or invalid file"}), 400
+        return jsonify({"status": "error", "message": "Read-only or invalid file"}), 400
 
     content = request.json.get("content", "")
     success, message = validate_and_save(filename, content)
@@ -115,17 +162,12 @@ def save_file(filename):
         return jsonify({"status": "ok"})
     return jsonify({"status": "error", "message": message}), 400
 
-# ======================
-# Backup & Restore
-# ======================
-
 @app.route("/backup/<filename>", methods=["POST"])
 @login_required
 def backup_file(filename):
     if filename not in FILES:
         flash("Invalid file.")
         return redirect(url_for("dashboard"))
-    os.makedirs(BACKUP_DIR, exist_ok=True)
     src = FILES[filename]
     dst = os.path.join(BACKUP_DIR, filename + ".bak")
     try:
@@ -153,10 +195,6 @@ def restore_file(filename):
         flash(f"Restore failed: {str(e)}")
     return redirect(url_for("dashboard"))
 
-# ======================
-# User Management
-# ======================
-
 @app.route("/users")
 @login_required
 def users():
@@ -179,7 +217,7 @@ def add_user():
             )
             db.session.add(new_user)
             db.session.commit()
-            flash("User added successfully.")
+            flash("User added.")
             return redirect(url_for("users"))
         except IntegrityError:
             db.session.rollback()
@@ -194,7 +232,7 @@ def edit_user(user_id):
     user = UserModel.query.get_or_404(user_id)
     if request.method == "POST":
         if user.username == "admin" and request.form["role"] != "admin":
-            flash("Cannot change role of main admin.")
+            flash("Cannot demote main admin.")
             return redirect(url_for("users"))
         user.password = request.form["password"]
         user.role = request.form["role"]
@@ -212,18 +250,13 @@ def delete_user(user_id):
     if user.username == current_user.username:
         flash("You cannot delete yourself.")
         return redirect(url_for("users"))
-    admin_count = UserModel.query.filter_by(role="admin").count()
-    if user.role == "admin" and admin_count <= 1:
-        flash("At least one admin is required.")
+    if user.role == "admin" and UserModel.query.filter_by(role="admin").count() <= 1:
+        flash("At least one admin must remain.")
         return redirect(url_for("users"))
     db.session.delete(user)
     db.session.commit()
     flash("User deleted.")
     return redirect(url_for("users"))
-
-# ======================
-# Restart Services
-# ======================
 
 @app.route("/restart/<service>", methods=["POST"])
 @login_required
@@ -239,9 +272,6 @@ def restart_specific_service(service):
         flash(f"Failed to restart {service}.")
     return redirect(url_for("dashboard"))
 
-# ======================
-# Run App
-# ======================
 @app.route("/update_jesync", methods=["POST"])
 @login_required
 def update_jesync():
@@ -252,7 +282,6 @@ def update_jesync():
     except subprocess.CalledProcessError as e:
         flash(f"Update failed: {e}")
     return redirect(url_for("dashboard"))
-
 
 if __name__ == "__main__":
     with app.app_context():
