@@ -44,7 +44,6 @@ def get_service_status(service):
     except subprocess.CalledProcessError:
         return "inactive"
 
-
 @app.route("/")
 def index():
     return redirect(url_for("login"))
@@ -71,6 +70,14 @@ def dashboard():
     service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard.service"]
     service_statuses = {s: get_service_status(s) for s in service_list}
 
+    # Initially pass empty counts for AJAX fetch to populate
+    return render_template("dashboard.html", files=FILES.keys(), user=current_user,
+                           service_statuses=service_statuses,
+                           mikrotik_data=[], total_hotspot=0, total_pppoe=0)
+
+@app.route("/api/active_sessions")
+@login_required
+def api_active_sessions():
     mikrotik_routers = load_mikrotik_config()
     mikrotik_data = []
     total_hotspot = 0
@@ -87,9 +94,11 @@ def dashboard():
         total_hotspot += hotspot_count
         total_pppoe += pppoe_count
 
-    return render_template("dashboard.html", files=FILES.keys(), user=current_user,
-                           service_statuses=service_statuses, mikrotik_data=mikrotik_data,
-                           total_hotspot=total_hotspot, total_pppoe=total_pppoe)
+    return jsonify({
+        "mikrotik_data": mikrotik_data,
+        "total_hotspot": total_hotspot,
+        "total_pppoe": total_pppoe
+    })
 
 def load_mikrotik_config():
     CONFIG_PATH = "/opt/libreqos/src/jesync_dashboard/jesyncmt.json"
@@ -144,7 +153,6 @@ def edit_file(filename):
         file_type = "text"
 
     view_only = filename.endswith(".csv") or not has_edit_access(current_user)
-
     return render_template("editor.html", filename=filename, content=content,
                            file_type=file_type, can_edit=not view_only)
 
