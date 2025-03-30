@@ -4,7 +4,14 @@
 
   <!-- 🔝 Top Header Controls: Right-aligned -->
   <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 mb-3">
-    <!-- Dropdown (now right-aligned) -->
+    
+    <!-- ✅ Toggle Smart Polling -->
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="pollToggle">
+      <label class="form-check-label" for="pollToggle">🔁 Real Time Update </label>
+    </div>
+
+    <!-- 🛠️ Dropdown Services -->
     <div class="dropdown">
       <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
         <i class="bi bi-gear"></i> Jesync | LibreQoS Services
@@ -41,7 +48,7 @@
   <!-- 📡 MikroTik Routers -->
   <div id="router-cards" class="row g-3 mb-4"></div>
 
-  <!-- 🧩 Jesync & LibreQoS Files (Side-by-Side) -->
+  <!-- 🧩 Jesync & LibreQoS Files -->
   <div class="row g-3">
     <!-- Jesync Files -->
     <div class="col-md-6">
@@ -135,8 +142,10 @@
   </div>
 </div>
 
-<!-- 🔄 Real-time JS Fetch -->
+<!-- 🔄 Smart Polling Script -->
 <script>
+  let pollingInterval = null;
+
   async function fetchActiveSessions() {
     try {
       const res = await fetch("/api/active_sessions");
@@ -170,6 +179,37 @@
     }
   }
 
-  window.onload = fetchActiveSessions;
+  function startPolling() {
+    if (pollingInterval) return;
+    fetchActiveSessions();
+    pollingInterval = setInterval(fetchActiveSessions, 10000);
+  }
+
+  function stopPolling() {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+  }
+
+  const pollToggle = document.getElementById("pollToggle");
+
+  pollToggle.addEventListener("change", function () {
+    if (this.checked) {
+      localStorage.setItem("smartPolling", "enabled");
+      startPolling();
+    } else {
+      localStorage.setItem("smartPolling", "disabled");
+      stopPolling();
+    }
+  });
+
+  window.onload = () => {
+    const saved = localStorage.getItem("smartPolling");
+    if (saved === "enabled") {
+      pollToggle.checked = true;
+      startPolling();
+    } else {
+      fetchActiveSessions(); // one-time fetch
+    }
+  };
 </script>
 {% endblock %}
