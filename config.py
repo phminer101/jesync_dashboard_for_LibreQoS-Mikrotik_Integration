@@ -7,7 +7,7 @@ FILES = {
     "updatecsv.py": "/opt/libreqos/src/updatecsv.py",
     "jesyncmt.json": "/opt/libreqos/src/jesync_dashboard/jesyncmt.json",  # ✅ Add this line
     "network.json": "/opt/libreqos/src/network.json",
-    "ShapedDevices.csv": "/etc/libreqos/src/ShapedDevices.csv",
+    "ShapedDevices.csv": "/opt/libreqos/src/ShapedDevices.csv",
     "lqos.conf": "/etc/lqos.conf"
 }
 
