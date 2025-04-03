@@ -35,7 +35,7 @@ cat <<'EOL' > updatejesync.sh
 #!/bin/bash
 set -e
 REPO_DIR="/opt/jesync_dashboard"
-BACKUP_DIR="/opt/jesyncbak/autoupdate_$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="/opt/jesync_dashboard/backups/autoupdate_$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="$REPO_DIR/update.log"
 
 echo "📦 Starting Jesync Dashboard update..." | tee -a "$LOG_FILE"
@@ -61,3 +61,28 @@ echo "✅ Jesync Dashboard updated successfully." | tee -a "$LOG_FILE"
 EOL
 
 chmod +x updatejesync.sh
+
+echo "🛠️ Installing jesync_dashboard systemd service..."
+
+sudo tee /etc/systemd/system/jesync_dashboard.service > /dev/null <<EOF
+[Unit]
+Description=Jesync Dashboard Service
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/jesync_dashboard
+ExecStart=/opt/jesync_dashboard/venv/bin/python /opt/jesync_dashboard/app.py
+Restart=always
+User=www-data
+Environment=FLASK_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "🔄 Reloading systemd and starting Jesync Dashboard..."
+sudo systemctl daemon-reload
+sudo systemctl enable jesync_dashboard
+sudo systemctl restart jesync_dashboard
+
+echo "✅ Jesync Dashboard installation complete and running at: http://<your-server-ip>:5000"
