@@ -6,7 +6,7 @@
 
 set -e
 
-REPO_DIR="/opt/libreqos/src/jesync_dashboard"
+REPO_DIR="/opt/jesync_dashboard"
 BACKUP_DIR="/opt/jesyncbak/autoupdate_$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="$REPO_DIR/update.log"
 
