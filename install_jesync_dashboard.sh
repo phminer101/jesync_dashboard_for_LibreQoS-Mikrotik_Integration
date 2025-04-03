@@ -19,6 +19,10 @@ fi
 
 sudo chown -R "$USER:$USER" .
 
+# ✅ Create backup directory with proper permissions
+sudo mkdir -p /opt/jesyncbak
+sudo chmod 755 /opt/jesyncbak
+
 echo "🐍 Setting up Python virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
