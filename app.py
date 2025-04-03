@@ -101,7 +101,7 @@ def api_active_sessions():
     })
 
 def load_mikrotik_config():
-    CONFIG_PATH = "/opt/libreqos/src/jesync_dashboard/jesyncmt.json"
+    CONFIG_PATH = "/opt/jesync_dashboard/jesyncmt.json"
     try:
         with open(CONFIG_PATH, "r") as f:
             return json.load(f).get("routers", [])
