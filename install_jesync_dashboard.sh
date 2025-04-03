@@ -10,14 +10,13 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y python3 python3-venv python3-pip git curl nginx dos2unix
 
 echo "📁 Cloning Dashboard..."
-sudo mkdir -p /opt/libreqos/src
-cd /opt/libreqos/src
+sudo mkdir -p /opt/jesync_dashboard
+cd /opt/jesync_dashboard
 
-if [ ! -d jesync_dashboard ]; then
-  sudo git clone https://github.com/jesienazareth/jesync_dashboard.git
+if [ ! -d .git ]; then
+  sudo git clone https://github.com/jesienazareth/jesync_dashboard.git .
 fi
 
-cd jesync_dashboard
 sudo chown -R "$USER:$USER" .
 
 echo "🐍 Setting up Python virtual environment..."
@@ -35,7 +34,7 @@ echo "📝 Creating updatejesync.sh script..."
 cat <<'EOL' > updatejesync.sh
 #!/bin/bash
 set -e
-REPO_DIR="/opt/libreqos/src/jesync_dashboard"
+REPO_DIR="/opt/jesync_dashboard"
 BACKUP_DIR="/opt/jesyncbak/autoupdate_$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="$REPO_DIR/update.log"
 
@@ -62,32 +61,3 @@ echo "✅ Jesync Dashboard updated successfully." | tee -a "$LOG_FILE"
 EOL
 
 chmod +x updatejesync.sh
-dos2unix updatejesync.sh
-
-echo "🗂️ Installing systemd service..."
-sudo tee /etc/systemd/system/jesync_dashboard.service > /dev/null <<EOL
-[Unit]
-Description=Jesync Dashboard Web UI
-After=network.target
-
-[Service]
-User=root
-Group=root
-WorkingDirectory=/opt/libreqos/src/jesync_dashboard
-Environment="PATH=/opt/libreqos/src/jesync_dashboard/venv/bin"
-EnvironmentFile=/opt/libreqos/src/jesync_dashboard/.env
-ExecStart=/opt/libreqos/src/jesync_dashboard/venv/bin/python app.py
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-echo "✅ Reloading and enabling service..."
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl enable jesync_dashboard
-sudo systemctl start jesync_dashboard
-
-echo "🎉 Jesync Dashboard installed and running!"
-echo "🌐 Access it at: http://<your-server-ip>:5000"
