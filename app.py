@@ -70,7 +70,7 @@ def dashboard():
     service_list = ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard.service"]
     service_statuses = {s: get_service_status(s) for s in service_list}
 
-    # Empty counts — AJAX will fill later
+
     return render_template("dashboard.html", files=FILES.keys(), user=current_user,
                            service_statuses=service_statuses,
                            mikrotik_data=[], total_hotspot=0, total_pppoe=0)
@@ -131,7 +131,7 @@ def fetch_active_sessions(router):
             pppoe_resource = api.get_resource("/ppp/active")
             all_sessions = pppoe_resource.get()
 
-            # ✅ Filter out sessions with comment containing "dis"
+
             filtered_sessions = [
                 s for s in all_sessions
                 if "comment" not in s or "dis" not in s["comment"].lower()
