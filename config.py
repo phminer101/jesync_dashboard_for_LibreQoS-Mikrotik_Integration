@@ -5,16 +5,20 @@ FILES = {
     "jesync_static_device.json": "/opt/libreqos/src/jesync_static_device.json",
     "config.json": "/opt/libreqos/src/config.json",
     "updatecsv.py": "/opt/libreqos/src/updatecsv.py",
-    "jesyncmt.json": "/opt/libreqos/src/jesync_dashboard/jesyncmt.json",
+    "jesyncmt.json": "/opt/libreqos/src/jesync_dashboard/jesyncmt.json", 
     "network.json": "/opt/libreqos/src/network.json",
     "ShapedDevices.csv": "/opt/libreqos/src/ShapedDevices.csv",
-    "lqos.conf": "/etc/lqos.conf"
+    "lqos.conf": "/etc/lqos.conf",
+    "memkill.py": "/opt/jesync_memkill/memkill.py",
+    "updatecsv.service": "/etc/systemd/system/updatecsv.service",
+    "50-cloud-init.yaml": "/etc/netplan/50-cloud-init.yaml",
+    "libreqos.yaml": "/etc/netplan/libreqos.yaml"
 }
 
 
 
 
-VIEW_ONLY = ["ShapedDevices.csv"]  # mark which files are read-only
+VIEW_ONLY = ["ShapedDevices.csv"]  
 
 def validate_and_save(filename, content):
     try:
