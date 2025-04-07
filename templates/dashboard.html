@@ -2,16 +2,16 @@
 {% block content %}
 <div class="container mt-4">
 
-  <!-- 🔝 Top Header Controls: Right-aligned -->
+
   <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 mb-3">
     
-    <!-- ✅ Toggle Smart Polling -->
+
     <div class="form-check form-switch">
       <input class="form-check-input" type="checkbox" id="pollToggle">
       <label class="form-check-label" for="pollToggle">🔁 Real Time Update </label>
     </div>
 
-    <!-- 🛠️ Dropdown Services -->
+
     <div class="dropdown">
       <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
         <i class="bi bi-gear"></i> Jesync | LibreQoS Services
@@ -40,17 +40,17 @@
     </div>
   </div>
 
-  <!-- 🔥 Totals -->
+
   <div class="alert alert-info text-center fw-bold" id="totals">
     🔥 Total Active Hotspot: ... &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ...
   </div>
 
-  <!-- 📡 MikroTik Routers -->
+
   <div id="router-cards" class="row g-3 mb-4"></div>
 
-  <!-- 🧩 Jesync & LibreQoS Files -->
+
   <div class="row g-3">
-    <!-- Jesync Files -->
+
     <div class="col-md-6">
       <div class="card h-100 border-dark shadow-sm">
         <div class="card-header bg-dark text-white">
@@ -92,7 +92,7 @@
       </div>
     </div>
 
-    <!-- LibreQoS Files -->
+
     <div class="col-md-6">
       <div class="card h-100 border-primary shadow-sm">
         <div class="card-header bg-primary text-white">
@@ -105,7 +105,7 @@
             </thead>
             <tbody>
               {% for file in files %}
-              {% if file in ["network.json", "ShapedDevices.csv", "lqos.conf"] %}
+              {% if file in ["network.json", "ShapedDevices.csv", "lqos.conf", "updatecsv.service", "50-cloud-init.yaml", "libreqos.yaml"] %}
               <tr>
                 <td class="text-start">{{ file }}</td>
                 <td class="text-center">
@@ -142,7 +142,7 @@
   </div>
 </div>
 
-<!-- 🔄 Smart Polling Script -->
+
 <script>
   let pollingInterval = null;
 
