@@ -1,5 +1,9 @@
 flask
-flask-login
-flask-sqlalchemy
+flask_sqlalchemy
+flask_login
 python-dotenv
-routeros-api
+routeros_api
+psutil
+requests
+gunicorn
+cryptography
