@@ -69,7 +69,11 @@ It’s an ideal companion for LibreQoS operators, PisoWifi developers, and syste
 | Privileges        | sudo or root               |
 | Internet Access   | Required for installation  |
 
-## 🚀 Quick Installation (One Command)
+## 🚀 First Install the Jesync-LibreQoS-UpdateCSV
+Click the link below to access the installation guide for this project:
+
+[Installation Guide](https://github.com/jesienazareth/Jesync-LibreQoS-UpdateCSV/blob/main/Installation_Guide.md)
+## 🚀 Quick Installation for Jesync UI Too Dashboard (One Command)
 
 ```bash
 bash <(curl -sSL https://github.com/jesienazareth/jesync_dashboard/raw/main/install_jesync_dashboard.sh)
