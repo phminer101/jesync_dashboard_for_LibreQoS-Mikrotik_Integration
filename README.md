@@ -6,8 +6,7 @@
 
 A web-based GUI to manage Jesync and LibreQoS configuration files
 
-![ima![jesync ui pic1](https://github.com/user-attachments/assets/4808784b-bf90-4e57-b918-5d2753cfdddc)
-ge](https://github.com/user-attachments/assets/ca662bba-9afd-4483-a9d4-1b274616d969)
+![jesync ui pic1](https://github.com/user-attachments/assets/1a336c47-d346-43c7-ac9e-c25040877b55)
 ![image](https://github.com/user-attachments/assets/7d3b04d2-6617-4513-a2d4-d0932af48cf4)
 ![image](https://github.com/user-attachments/assets/edcd398c-b759-4a6f-bf30-c01180ca01c7)
 ![image](https://github.com/user-attachments/assets/4632f7ff-996f-4c92-9ecc-b2d75c847a81)
