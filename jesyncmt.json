@@ -1,4 +1,5 @@
 {
+  "Currency": "PHP",
   "routers": [
     {
       "name": "MikroTik PPPoE",
