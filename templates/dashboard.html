@@ -1,16 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-
+  {% if filename == 'ShapedDevices.csv' %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold">📄 Viewing: ShapedDevices.csv</h5>
+    <form method="POST" action="{{ url_for('wipe_file', filename='ShapedDevices.csv') }}" onsubmit="return confirm('Are you sure you want to wipe all data in ShapedDevices.csv?')">
+      <button class="btn btn-danger btn-sm">
+        <i class="bi bi-trash"></i> Wipe All Data
+      </button>
+    </form>
+  </div>
+  {% endif %}
 
   <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 mb-3">
-    
-
     <div class="form-check form-switch">
       <input class="form-check-input" type="checkbox" id="pollToggle">
       <label class="form-check-label" for="pollToggle">🔁 Real Time Update </label>
     </div>
-
 
     <div class="dropdown">
       <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -40,17 +46,21 @@
     </div>
   </div>
 
-
   <div class="alert alert-info text-center fw-bold" id="totals">
     🔥 Total Active Hotspot: ... &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ...
   </div>
 
-
   <div id="router-cards" class="row g-3 mb-4"></div>
 
+  <!-- 🖧 Local Server Interface Info -->
+  <div class="card border-info mb-4">
+    <div class="card-header bg-info text-white fw-bold">🖧 Server Ethernet Interfaces</div>
+    <div class="card-body" id="local-interfaces">
+      Loading...
+    </div>
+  </div>
 
   <div class="row g-3">
-
     <div class="col-md-6">
       <div class="card h-100 border-dark shadow-sm">
         <div class="card-header bg-dark text-white">
@@ -92,7 +102,6 @@
       </div>
     </div>
 
-
     <div class="col-md-6">
       <div class="card h-100 border-primary shadow-sm">
         <div class="card-header bg-primary text-white">
@@ -110,13 +119,13 @@
                 <td class="text-start">{{ file }}</td>
                 <td class="text-center">
                   {% if file == "ShapedDevices.csv" %}
-                  <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-outline-secondary btn-sm" title="View">
-                    <i class="bi bi-eye"></i>
-                  </a>
+                    <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-outline-secondary btn-sm" title="View">
+                      <i class="bi bi-eye"></i>
+                    </a>
                   {% else %}
-                  <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-outline-primary btn-sm" title="Edit">
-                    <i class="bi bi-pencil"></i>
-                  </a>
+                    <a href="{{ url_for('edit_file', filename=file) }}" class="btn btn-outline-primary btn-sm" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
                   {% endif %}
                 </td>
                 <td class="text-center">
@@ -141,7 +150,6 @@
     </div>
   </div>
 </div>
-
 
 <script>
   let pollingInterval = null;
@@ -179,6 +187,23 @@
     }
   }
 
+  async function fetchLocalInterfaces() {
+    try {
+      const res = await fetch("/api/local_interfaces");
+      const data = await res.json();
+
+      let html = "";
+      Object.entries(data).forEach(([name, val]) => {
+        html += `<div>${name}: ${val.status ? '🟢 Active' : '🔴 Inactive'} (${val.ip})</div>`;
+      });
+
+      document.getElementById("local-interfaces").innerHTML = html || "No interfaces found";
+    } catch (err) {
+      document.getElementById("local-interfaces").innerHTML = "Error loading interface info";
+      console.error("Error fetching local interface info:", err);
+    }
+  }
+
   function startPolling() {
     if (pollingInterval) return;
     fetchActiveSessions();
@@ -191,7 +216,6 @@
   }
 
   const pollToggle = document.getElementById("pollToggle");
-
   pollToggle.addEventListener("change", function () {
     if (this.checked) {
       localStorage.setItem("smartPolling", "enabled");
@@ -208,8 +232,10 @@
       pollToggle.checked = true;
       startPolling();
     } else {
-      fetchActiveSessions(); // one-time fetch
+      fetchActiveSessions();
     }
+
+    fetchLocalInterfaces();
   };
 </script>
 {% endblock %}
