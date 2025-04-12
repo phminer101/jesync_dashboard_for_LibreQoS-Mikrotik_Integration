@@ -11,6 +11,8 @@ import os
 import shutil
 import json
 import secrets
+import psutil
+import socket
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -162,7 +164,8 @@ def edit_file(filename):
 
     view_only = filename.endswith(".csv") or not has_edit_access(current_user)
     return render_template("editor.html", filename=filename, content=content,
-                           file_type=file_type, can_edit=not view_only)
+                       file_type=file_type, can_edit=not view_only)
+
 
 @app.route("/api/save/<filename>", methods=["POST"])
 @login_required
@@ -298,6 +301,50 @@ def update_jesync():
     except subprocess.CalledProcessError as e:
         flash(f"Update failed: {e}")
     return redirect(url_for("dashboard"))
+
+@app.route("/api/local_interfaces")
+@login_required
+def local_interfaces():
+    interfaces = psutil.net_if_addrs()
+    stats = psutil.net_if_stats()
+
+    result = {}
+    for name, info in interfaces.items():
+        if name == "lo":
+            continue  # skip loopback
+
+        ip = next((i.address for i in info if i.family == socket.AF_INET), None)
+        status = stats[name].isup if name in stats else False
+
+        result[name] = {
+            "status": status,
+            "ip": ip or "N/A"
+        }
+
+    return jsonify(result)
+
+from flask import flash, redirect, url_for
+import os
+
+@app.route('/wipe/<path:filename>', methods=['POST'])
+@login_required
+def wipe_file(filename):
+    allowed_file = "ShapedDevices.csv"
+    full_path = f"/opt/libreqos/src/{allowed_file}"
+
+    if filename != allowed_file:
+        flash("❌ Only ShapedDevices.csv is allowed to be wiped.", "danger")
+        return redirect(url_for('dashboard'))
+
+    try:
+        with open(full_path, 'w') as f:
+            f.truncate(0)
+        flash("✅ ShapedDevices.csv has been wiped successfully.", "success")
+    except Exception as e:
+        flash(f"❌ Error wiping file: {e}", "danger")
+
+    return redirect(url_for('edit_file', filename=allowed_file))
+
 
 if __name__ == "__main__":
     with app.app_context():
