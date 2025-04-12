@@ -13,6 +13,8 @@ import json
 import secrets
 import psutil
 import socket
+import csv
+from flask import request, redirect, url_for, flash
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -326,24 +328,103 @@ def local_interfaces():
 from flask import flash, redirect, url_for
 import os
 
-@app.route('/wipe/<path:filename>', methods=['POST'])
-@login_required
+@app.route('/wipe_file/<filename>', methods=['POST'])
 def wipe_file(filename):
-    allowed_file = "ShapedDevices.csv"
-    full_path = f"/opt/libreqos/src/{allowed_file}"
-
-    if filename != allowed_file:
-        flash("❌ Only ShapedDevices.csv is allowed to be wiped.", "danger")
-        return redirect(url_for('dashboard'))
-
     try:
-        with open(full_path, 'w') as f:
-            f.truncate(0)
-        flash("✅ ShapedDevices.csv has been wiped successfully.", "success")
-    except Exception as e:
-        flash(f"❌ Error wiping file: {e}", "danger")
+        if filename == 'ShapedDevices.csv':
+            file_path = '/opt/libreqos/src/ShapedDevices.csv'
 
-    return redirect(url_for('edit_file', filename=allowed_file))
+            with open(file_path, 'r') as f:
+                rows = list(csv.reader(f))
+
+            # Preserve only header + first data row
+            preserved = rows[:2]  # row[0] = header, row[1] = first row (usually test/dummy)
+
+            with open(file_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerows(preserved)
+
+            flash('✅ ShapedDevices.csv wiped (except for first row)', 'success')
+        else:
+            # fallback for other file types
+            file_path = os.path.join('/opt/libreqos/src/jesync_dashboard', filename)
+            open(file_path, 'w').close()
+            flash(f'✅ {filename} wiped.', 'success')
+
+    except Exception as e:
+        flash(f"❌ Error wiping file: {str(e)}", 'danger')
+
+    return redirect(url_for('edit_file', filename=filename))
+
+
+
+
+@app.route('/add_shaped_device', methods=['POST'])
+def add_shaped_device():
+    try:
+        print("🟢 Add Entry Triggered")
+
+        new_row = {
+            'Circuit ID': request.form.get('circuit_id', ''),
+            'Circuit Name': request.form.get('circuit_name', ''),
+            'Device ID': request.form.get('device_id', ''),
+            'Device Name': request.form.get('device_name', ''),
+            'Parent Node': request.form.get('parent_node', ''),
+            'MAC': request.form.get('mac', ''),
+            'IPv4': request.form.get('ipv4', ''),
+            'IPv6': request.form.get('ipv6', ''),
+            'Download Min Mbps': request.form.get('download_min', ''),
+            'Upload Min Mbps': request.form.get('upload_min', ''),
+            'Download Max Mbps': request.form.get('download_max', ''),
+            'Upload Max Mbps': request.form.get('upload_max', ''),
+            'Comment': request.form.get('comment', '')
+        }
+
+        csv_path = "/opt/libreqos/src/ShapedDevices.csv"
+
+        file_exists = os.path.isfile(csv_path)
+
+        with open(csv_path, 'a', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=new_row.keys())
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(new_row)
+
+        flash("✅ Entry added successfully!", "success")
+    except Exception as e:
+        flash(f"❌ Error adding entry: {str(e)}", "danger")
+
+    return redirect(url_for('edit_file', filename='ShapedDevices.csv'))
+
+@app.route('/delete_shaped_device/<int:index>', methods=['POST'])
+def delete_shaped_device(index):
+    try:
+        csv_path = "/opt/libreqos/src/ShapedDevices.csv"
+
+        with open(csv_path, 'r') as f:
+            rows = list(csv.reader(f))
+
+        header = rows[0]
+        data = rows[1:]
+
+        if 0 <= index < len(data):
+            del data[index]
+
+            with open(csv_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(header)
+                writer.writerows(data)
+
+            flash("✅ Entry deleted successfully!", "success")
+        else:
+            flash("❌ Invalid row index!", "danger")
+
+    except Exception as e:
+        flash(f"❌ Error deleting entry: {str(e)}", "danger")
+
+    return redirect(url_for('edit_file', filename='ShapedDevices.csv'))
+
+
 
 
 if __name__ == "__main__":
