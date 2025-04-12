@@ -39,11 +39,6 @@
 
   <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">← Back to Home</a>
 
-  <div class="input-group mb-3">
-    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search content...">
-    <button class="btn btn-outline-secondary" onclick="performSearch()">Search</button>
-  </div>
-
   {% if can_edit %}
     <form method="POST" action="{{ url_for('backup_file', filename=filename) }}" class="d-inline">
       <button type="submit" class="btn btn-outline-warning mb-3">📦 Backup</button>
