@@ -424,7 +424,33 @@ def delete_shaped_device(index):
 
     return redirect(url_for('edit_file', filename='ShapedDevices.csv'))
 
+@app.route("/upload_csv/<filename>", methods=["POST"])
+@login_required
+def upload_csv(filename):
+    if not has_edit_access(current_user):
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for("dashboard"))
 
+    if filename != "ShapedDevices.csv":
+        flash("Only ShapedDevices.csv is allowed for upload.", "danger")
+        return redirect(url_for("dashboard"))
+
+    if "csv_file" not in request.files:
+        flash("No file uploaded.", "warning")
+        return redirect(url_for("edit_file", filename=filename))
+
+    file = request.files["csv_file"]
+    if file.filename == "":
+        flash("Empty file name.", "warning")
+        return redirect(url_for("edit_file", filename=filename))
+
+    try:
+        file.save(FILES[filename])
+        flash("ShapedDevices.csv uploaded and replaced successfully.", "success")
+    except Exception as e:
+        flash(f"Upload failed: {e}", "danger")
+
+    return redirect(url_for("edit_file", filename=filename))
 
 
 if __name__ == "__main__":
