@@ -6,13 +6,24 @@
  {% if filename == 'ShapedDevices.csv' %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    
     <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">🔄 Refresh</button>
   </div>
   <form method="POST" action="{{ url_for('wipe_file', filename=filename) }}" onsubmit="return confirm('Are you sure you want to wipe all data in ShapedDevices.csv?')">
     <button class="btn btn-sm btn-danger">🗑️ Wipe All Data</button>
   </form>
 </div>
+
+
+<form method="POST" action="{{ url_for('upload_csv', filename=filename) }}" enctype="multipart/form-data" class="mb-4">
+  <label class="form-label fw-bold">📤 Upload New ShapedDevices.csv:</label>
+  <div class="input-group">
+    <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+    <button type="submit" class="btn btn-outline-success">
+      <i class="bi bi-upload"></i> Upload
+    </button>
+  </div>
+  <small class="text-muted">⚠️ This will overwrite the current CSV file immediately.</small>
+</form>
 
 
   <form method="POST" action="{{ url_for('add_shaped_device') }}" class="mb-4">
