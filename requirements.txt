@@ -1,9 +1,25 @@
-flask
-flask_sqlalchemy
-flask_login
-python-dotenv
-routeros_api
-psutil
-requests
-gunicorn
-cryptography
+# Flask Core
+Flask==2.3.2
+flask_sqlalchemy==3.1.1
+flask_login==0.6.3
+
+# License System & Encryption
+cryptography==42.0.5
+python-dotenv==1.0.1
+pyjwt==2.8.0
+
+# System Interaction
+psutil==5.9.8
+requests==2.31.0
+
+# MikroTik API
+routeros-api==0.3.1  # for MikroTik sync
+
+# Charting (for templates)
+chart.js  # (used via CDN, no pip needed)
+
+# SQLite DB Management
+pysqlite3-binary==0.5.1  # (optional for systems without default sqlite3)
+
+# Utilities (for backup, file operations)
+shutilwhich==1.1.0  # optional
