@@ -1,10 +1,20 @@
+# Web Framework
 Flask==2.3.2
 flask_sqlalchemy==3.1.1
 flask_login==0.6.3
+
+# Encryption and License Handling
 cryptography==42.0.5
 python-dotenv==1.0.1
 pyjwt==2.8.0
+
+# System and Networking
 psutil==5.9.8
 requests==2.31.0
 routeros_api==0.16.0
-pysqlite3-binary==0.5.1
+
+# Optional: Only if your system lacks built-in SQLite support
+pysqlite3-binary==0.5.4
+
+# Optional: For creating a secure .exe or binary
+pyinstaller==6.3.0
