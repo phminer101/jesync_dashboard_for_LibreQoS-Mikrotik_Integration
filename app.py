@@ -452,6 +452,22 @@ def upload_csv(filename):
 
     return redirect(url_for("edit_file", filename=filename))
 
+@app.context_processor
+def inject_version():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "VERSION")) as f:
+            return {"version": f.read().strip()}
+    except:
+        return {"version": "Unknown"}
+
+@app.route("/api/version")
+def get_version():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "VERSION")) as f:
+            return jsonify({"version": f.read().strip()})
+    except:
+        return jsonify({"version": "Unknown"})
+
 
 if __name__ == "__main__":
     with app.app_context():
