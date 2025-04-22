@@ -296,13 +296,26 @@ def restart_specific_service(service):
 @app.route("/update_jesync", methods=["POST"])
 @login_required
 def update_jesync():
-    script_path = "/opt/libreqos/src/jesync_dashboard/updatejesync.sh"
     try:
-        subprocess.run(["/bin/bash", script_path], check=True)
-        flash("Jesync updated successfully.")
-    except subprocess.CalledProcessError as e:
-        flash(f"Update failed: {e}")
+        patcher_path = "/opt/jesyncpatcher/jesync_patch.py"
+        log_file = "/opt/jesyncpatcher/patch.log"
+
+        # Ensure the log directory exists
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
+        # Run patcher in background and redirect stdout+stderr to log file
+        subprocess.Popen(
+            ["python3", patcher_path],
+            stdout=open(log_file, "w"),
+            stderr=subprocess.STDOUT
+        )
+
+        flash("✅ Jesync patch process started in the background. Check patch.log for progress.", "success")
+    except Exception as e:
+        flash(f"❌ Failed to launch patch process: {str(e)}", "danger")
+
     return redirect(url_for("dashboard"))
+
 
 @app.route("/api/local_interfaces")
 @login_required
