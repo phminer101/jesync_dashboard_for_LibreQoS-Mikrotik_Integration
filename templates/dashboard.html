@@ -19,32 +19,41 @@
     </div>
 
     <div class="dropdown">
-      <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        <i class="bi bi-gear"></i> Jesync | LibreQoS Services
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow">
-        {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard"] %}
-        <li class="px-3 py-2">
-          <div class="d-flex justify-content-between align-items-center">
-            <span>{{ service.replace('.service', '') }}</span>
-            <span>
-              {% if service_statuses[service] == 'active' %}
-                <span class="badge bg-success">●</span>
-              {% else %}
-                <span class="badge bg-danger">●</span>
-              {% endif %}
-            </span>
-            <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}" class="ms-2">
-              <button class="btn btn-sm btn-outline-success" title="Restart">
-                <i class="bi bi-arrow-repeat"></i>
-              </button>
-            </form>
-          </div>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+  <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+    <i class="bi bi-gear"></i> Jesync | LibreQoS Services
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end shadow">
+    {% for service in ["lqosd", "lqos_node_manager", "lqos_scheduler", "updatecsv", "jesync_dashboard"] %}
+    <li class="px-3 py-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <span>{{ service.replace('.service', '') }}</span>
+        <span>
+          {% if service_statuses[service] == 'active' %}
+            <span class="badge bg-success">●</span>
+          {% else %}
+            <span class="badge bg-danger">●</span>
+          {% endif %}
+        </span>
+        <form method="POST" action="{{ url_for('restart_specific_service', service=service) }}" class="ms-2">
+          <button class="btn btn-sm btn-outline-success" title="Restart">
+            <i class="bi bi-arrow-repeat"></i>
+          </button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+
+    <!-- ✅ Add the update patch trigger here -->
+    <li class="px-3 py-2 border-top mt-2">
+      <form method="POST" action="{{ url_for('update_jesync') }}" onsubmit="return confirm('Run Jesync patch update now?')">
+        <button class="btn btn-warning btn-sm w-100 fw-bold">
+          🔄 Update Jesync UI Tool
+        </button>
+      </form>
+    </li>
+  </ul>
+</div>
+
 
   <div class="alert alert-info text-center fw-bold" id="totals">
     🔥 Total Active Hotspot: ... &nbsp;&nbsp;&nbsp; 📡 Total Active PPPoE: ...
