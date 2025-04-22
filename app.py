@@ -300,21 +300,29 @@ def update_jesync():
         patcher_path = "/opt/jesyncpatcher/jesync_patch.py"
         log_file = "/opt/jesyncpatcher/patch.log"
 
-        # Ensure the log directory exists
+        # Ensure patch script exists
+        if not os.path.isfile(patcher_path):
+            flash(f"❌ Patch script not found at {patcher_path}", "danger")
+            return redirect(url_for("dashboard"))
+
+        # Ensure log directory exists
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
-        # Run patcher in background and redirect stdout+stderr to log file
-        subprocess.Popen(
-            ["python3", patcher_path],
-            stdout=open(log_file, "w"),
-            stderr=subprocess.STDOUT
-        )
+        # Run patcher in the background and redirect output to log file
+        with open(log_file, "w") as log:
+            subprocess.Popen(
+                ["python3", patcher_path],
+                stdout=log,
+                stderr=subprocess.STDOUT
+            )
 
-        flash("✅ Jesync patch process started in the background. Check patch.log for progress.", "success")
+        flash("✅ Jesync patch started in background. Check <code>patch.log</code> for progress.", "success")
+
     except Exception as e:
-        flash(f"❌ Failed to launch patch process: {str(e)}", "danger")
+        flash(f"❌ Failed to start patch process: {str(e)}", "danger")
 
     return redirect(url_for("dashboard"))
+
 
 
 @app.route("/api/local_interfaces")
