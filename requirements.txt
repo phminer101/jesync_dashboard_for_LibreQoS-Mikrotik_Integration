@@ -17,5 +17,4 @@ routeros_api==0.16.0
 # Optional: Only if your system lacks built-in SQLite support
 pysqlite3-binary==0.5.4
 
-# Optional: For creating a secure .exe or binary
-pyinstaller==6.3.0
+
