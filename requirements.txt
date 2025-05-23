@@ -14,7 +14,11 @@ psutil==5.9.8
 requests==2.31.0
 routeros_api==0.16.0
 
-# Optional: Only if your system lacks built-in SQLite support
+# Optional SQLite Support
 pysqlite3-binary==0.5.4
 
-
+# Additional Dependencies
+pandas
+fastapi
+httpx
+mysql-connector-python
