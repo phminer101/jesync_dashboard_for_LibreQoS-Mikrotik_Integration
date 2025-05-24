@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% block page_title %}🛠 Jesync Patcher Console{% endblock %}
+
+{% block content %}
+<div class="card card-dark shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title"><i class="fas fa-terminal"></i> Patch Output</h3>
+    <!-- <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-sm">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a> -->
+  </div>
+  <div class="card-body bg-black text-white" style="font-family: monospace; white-space: pre-wrap; font-size: 0.9rem;">
+    {{ output }}
+  </div>
+</div>
+{% endblock %}
