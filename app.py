@@ -489,7 +489,24 @@ def get_version():
     except:
         return jsonify({"version": "Unknown"})
 
+###### Patch Area #######
 
+@app.route("/jesync_patcher")
+@login_required
+def jesync_patcher():
+    try:
+        result = subprocess.run(
+            ["/opt/jesyncpatcher/jesync_patch_exec", "--status"],
+            capture_output=True, text=True, timeout=10
+        )
+        output = result.stdout.strip()
+    except subprocess.TimeoutExpired:
+        output = "❌ Patch check timed out."
+    except Exception as e:
+        output = f"❌ Patch error:\n{str(e)}"
+
+    return render_template("jesync_patcher.html", output=output)
+    
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
